@@ -339,7 +339,7 @@ function ns.NeverMute(key, display)
         return
     end
     db.allow[key] = true
-    db.players[key], db.manual[key], db.passes[key] = nil, nil, nil
+    db.players[key], db.manual[key], db.passes[key], db.former[key] = nil, nil, nil, nil
     for guid, k in pairs(db.guids) do
         if k == key then
             db.guids[guid] = nil
@@ -381,6 +381,7 @@ function ns.ClearPlayers()
     wipe(db.guids)
     wipe(db.players)
     wipe(db.manual)
+    wipe(db.former)
     ns.DataChanged(true)
     Print("cleared all muted players.")
 end

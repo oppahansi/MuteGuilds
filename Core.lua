@@ -275,6 +275,7 @@ function ns.Block(guid, name, guild)
     end
     local isNew, listChanged = false, false
     local current = db.players[key]
+    db.former[key] = nil -- muted again: the "was in a muted guild" note is over
     if current == nil then
         db.players[key] = guild
         isNew, listChanged = true, true
@@ -299,6 +300,9 @@ function ns.Block(guid, name, guild)
     end
 end
 
+-- force: the user asked for it (unmute, never mute). Without it the player is
+-- being removed because they were seen outside the muted guild, and a note of
+-- that guild is kept for their tooltip.
 function ns.Unblock(guid, name, force)
     local db = ns.db
     local key = ResolveKey(name)
@@ -311,6 +315,8 @@ function ns.Unblock(guid, name, force)
         changed = true
     end
     if key and db.players[key] ~= nil then
+        local guild = db.players[key]
+        db.former[key] = (not force and ns.IsMutedGuild(guild)) and guild or nil
         db.players[key] = nil
         listChanged = true
         for g, k in pairs(db.guids) do
@@ -371,7 +377,22 @@ function ns.UnmuteOrphans()
             drop[key] = true
         end
     end
+    -- Notes about former members of a guild that is no longer listed.
+    for key, guild in pairs(db.former) do
+        if not db.guilds[GuildKey(guild) or ""] then
+            db.former[key] = nil
+        end
+    end
     return ns.UnblockMany(drop)
+end
+
+-- The muted guild this player was last seen leaving, or nil.
+function ns.FormerGuild(key)
+    local db = ns.db
+    local guild = key and db.former[key]
+    if guild and db.players[key] == nil and db.guilds[GuildKey(guild) or ""] then
+        return guild
+    end
 end
 
 -- The game now reports a different name for a known character (a rename):
@@ -401,7 +422,8 @@ end
 ---------------------------------------------------------------------------
 -- Saved data
 ---------------------------------------------------------------------------
-local TABLES = { "guilds", "players", "guids", "manual", "allow", "words", "nameWords", "passes", "groupWarned" }
+local TABLES =
+    { "guilds", "players", "guids", "manual", "allow", "words", "nameWords", "passes", "groupWarned", "former" }
 local FLAGS = {
     enabled = true,
     declineGuild = true,
@@ -467,6 +489,11 @@ function ns.InitDB()
     for k, v in pairs(db.players) do
         if type(k) ~= "string" or type(v) ~= "string" then
             db.players[k] = nil
+        end
+    end
+    for k, v in pairs(db.former) do
+        if type(k) ~= "string" or type(v) ~= "string" then
+            db.former[k] = nil
         end
     end
     for g, k in pairs(db.guids) do

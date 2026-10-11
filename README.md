@@ -27,6 +27,7 @@ It also goes further than its inspiration, most visibly with the debug modes des
 - **`/who` scan** that steps through your listed guilds by level range, to reach members beyond the 50-result limit.
 - **Auto-decline** of guild invites, group invites and duels from muted players. Group invites and duels are declined after a short random pause unless you choose "instantly".
 - **Trade prompt** that asks before you trade with a muted player.
+- **Former members.** A player seen outside the guild they were muted for is unmuted, and their tooltip then notes that they were in a muted guild before.
 - **Warnings** when you whisper or invite a muted player, a tooltip line on muted players, and a window when a muted player is in your group, with the option to unmute them while grouped.
 - **Chat bubbles** of muted players are hidden in the open world.
 - **Word filter and name filter** for hiding messages by content or by character name, from anyone.

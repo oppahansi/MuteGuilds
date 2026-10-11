@@ -391,6 +391,9 @@ local function OnTooltipUnit(tooltip)
         tooltip:AddLine("MuteGuilds: unmuted while grouped", 1, 0.82, 0)
     elseif db.players[key] then
         tooltip:AddLine("Muted by MuteGuilds <" .. db.players[key] .. ">", 1, 0.3, 0.3)
+    elseif ns.FormerGuild(key) then
+        -- No longer in the guild they were muted for, so no longer muted.
+        tooltip:AddLine("MuteGuilds: was in a muted guild before <" .. ns.FormerGuild(key) .. ">", 1, 0.6, 0.2)
     end
 end
 
