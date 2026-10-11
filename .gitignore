@@ -1,0 +1,10 @@
+# third-party reference addon, kept locally only
+reference/
+
+# Claude Code and editor files, kept locally only
+.claude/
+CLAUDE.md
+CLAUDE.local.md
+.vscode/
+
+*.zip

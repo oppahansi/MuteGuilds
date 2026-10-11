@@ -1,0 +1,24 @@
+## Interface: 16001
+## Title: MuteGuilds
+## Notes: Hides chat and invites from players in the guilds on your list. Guild names must match exactly. Client-side only; does not use the ignore list.
+## Version: 0.1.0
+## Author: oppahansi
+## X-License: MIT
+## IconTexture: Interface\AddOns\MuteGuilds\Icon
+## SavedVariables: MuteGuildsDB
+
+Core.lua
+Debug.lua
+Filter.lua
+History.lua
+Bubbles.lua
+Learn.lua
+Requests.lua
+Social.lua
+Scan.lua
+Lists.lua
+Share.lua
+Windows.lua
+Options.lua
+Commands.lua
+Events.lua
