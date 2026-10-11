@@ -36,6 +36,7 @@ It also goes further than its inspiration, most visibly with the debug modes des
 - **Muted-messages log** of the last 15 minutes, from which you can report a message.
 - **Ignore-list import** to move players from the game's ignore list onto your mute list.
 - **List sharing** of guild names and filtered words with other MuteGuilds users. The receiver is always asked first.
+- **English and German.** The addon follows the language of your game client.
 
 ## Debug modes
 
@@ -75,6 +76,14 @@ Right-click a player's unit frame (target, focus, party, raid, or another player
 - **Mute guild <Name>** adds that exact guild name to your list and mutes the player straight away. For a guild already on your list it reads **Unmute guild <Name>** and removes it.
 
 This is the quickest way to add a guild without typing its name. The entries appear only for players who are in a guild, and not when you right-click a name in chat, because the game only reports a guild for a player it can currently see.
+
+## Languages
+
+MuteGuilds is available in English and German (`deDE`) and uses the language your game client runs in. Any other client language gets English.
+
+The slash commands and their keywords (`add`, `remove`, `on`, `off` and so on) are the same in every language.
+
+To add a language, copy `Locales/deDE.lua`, change the locale code it checks for, translate the texts on the right-hand side, and list the new file in `MuteGuilds.toc` after `Locales\enUS.lua`.
 
 ## Installation
 

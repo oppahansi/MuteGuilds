@@ -1,6 +1,7 @@
 -- Requests.lua: guild invites, group invites, duels and trades from muted players.
 
 local _, ns = ...
+local L = ns.L
 local IsSecret, Print = ns.IsSecret, ns.Print
 
 ---------------------------------------------------------------------------
@@ -103,7 +104,8 @@ end
 -- key: who the open invite is from. listKey: their entry on the mute list.
 local function DeclineGroupInvite(name, guild, key, listKey)
     unidentified = nil
-    ns.Debug("%s a group invite from %s <%s>.", ns.Did("declining", "would decline"), name, tostring(guild))
+    guild = tostring(ns.TagText(guild))
+    ns.Debug(L["%s a group invite from %s <%s>."], ns.Did(L["declining"], L["would decline"]), name, guild)
     if ns.IsDryRun() then
         return
     end
@@ -117,7 +119,7 @@ local function DeclineGroupInvite(name, guild, key, listKey)
     DeclineLater("group", function()
         DeclineGroup()
         HideGroupInvite()
-        ns.PrintThrottled("group:" .. name, ("declined a group invite from %s <%s>."):format(name, tostring(guild)))
+        ns.PrintThrottled("group:" .. name, L["declined a group invite from %s <%s>."]:format(name, guild))
     end, function() -- still the same invite, still muted, option still on
         return ns.db.declineGroup and key ~= nil and open.key == key and ns.IsMuted(listKey)
     end, function()
@@ -207,7 +209,7 @@ local function HandleGuildInvite(inviter, guildName)
     if not ns.db.declineGuild or not ns.IsMutedGuild(guildName) then
         return
     end
-    ns.Debug("%s a guild invite from <%s>.", ns.Did("declining", "would decline"), guildName)
+    ns.Debug(L["%s a guild invite from <%s>."], ns.Did(L["declining"], L["would decline"]), guildName)
     if ns.IsDryRun() then
         return
     end
@@ -221,7 +223,7 @@ local function HandleGuildInvite(inviter, guildName)
     if type(inviter) == "string" and not IsSecret(inviter) then
         ns.Block(nil, inviter, guildName)
     end
-    ns.PrintThrottled("guild:" .. guildName, ("declined a guild invite from <%s>."):format(guildName))
+    ns.PrintThrottled("guild:" .. guildName, L["declined a guild invite from <%s>."]:format(guildName))
     lastGuildDecline = GetTime()
 end
 
@@ -244,7 +246,8 @@ function ns.OnGuildInviteLine(body)
     end
     local name, rest = body:match("^|Hplayer:([^:|]+)|h%[[^%]]*%]|h (.*)$")
     -- English wording only: in other languages the guild name can't be read
-    -- from the line, and guessing is worse than leaving the invite alone.
+    -- from the line, and guessing is worse than leaving the invite alone. The
+    -- GUILD_INVITE_REQUEST event above works in every language.
     local guild = name and rest:gsub("|r$", ""):match("join (.-)%.?$")
     if guild then
         HandleGuildInvite(name, guild)
@@ -272,7 +275,7 @@ function ns.OnDuelRequested(challenger, event)
     if not guild then
         return
     end
-    ns.Debug("%s a duel from %s <%s>.", ns.Did("declining", "would decline"), challenger, guild)
+    ns.Debug(L["%s a duel from %s <%s>."], ns.Did(L["declining"], L["would decline"]), challenger, guild)
     if ns.IsDryRun() then
         return
     end
@@ -285,7 +288,7 @@ function ns.OnDuelRequested(challenger, event)
     DeclineLater("duel", function()
         CancelDuel()
         HideDuel()
-        ns.PrintThrottled("duel:" .. challenger, ("declined a duel from %s <%s>."):format(challenger, guild))
+        ns.PrintThrottled("duel:" .. challenger, L["declined a duel from %s <%s>."]:format(challenger, guild))
     end, function()
         return ns.db.declineDuel and ns.MutedGuildForName(challenger) ~= nil
     end, function() -- give the request back (death duels use the name twice)
@@ -314,19 +317,19 @@ local function CancelMutedTrade()
 end
 
 StaticPopupDialogs["MUTEGUILDS_TRADE"] = {
-    text = "Trade with %s <%s>?\n\nThey're on your MuteGuilds list.",
-    button1 = "Allow trade",
-    button2 = "Decline",
+    text = L["Trade with %s <%s>?\n\nThey're on your MuteGuilds list."],
+    button1 = L["Allow trade"],
+    button2 = L["Decline"],
     OnAccept = function(_, data)
         tradeAllowedUntil[data.key] = GetTime() + TRADE_ALLOWED_FOR
-        Print(("trading with %s allowed for the next 10 minutes. They stay muted."):format(data.name))
+        Print(L["trading with %s allowed for the next 10 minutes. They stay muted."]:format(data.name))
     end,
     OnCancel = function(_, data, reason)
         if reason == "override" or not data then
             return -- closed because the trade ended
         end
         CancelMutedTrade()
-        Print(("cancelled the trade with %s <%s>."):format(data.name, data.guild))
+        Print(L["cancelled the trade with %s <%s>."]:format(data.name, data.guild))
     end,
     timeout = 0,
     whileDead = true,
@@ -355,14 +358,14 @@ function ns.OnTrade(name)
         return
     end
     tradeAskedAt[key] = GetTime()
-    ns.Debug("%s before trading with %s <%s>.", ns.Did("asking", "would ask"), name, guild)
+    ns.Debug(L["%s before trading with %s <%s>."], ns.Did(L["asking"], L["would ask"]), name, guild)
     if ns.IsDryRun() then
         return
     end
     local data = { key = key, name = name, guild = guild }
     if not StaticPopup_Show("MUTEGUILDS_TRADE", name, guild, data) then
         CancelMutedTrade() -- no window available: decline
-        ns.PrintThrottled("trade:" .. name, ("cancelled the trade with %s <%s>."):format(name, guild))
+        ns.PrintThrottled("trade:" .. name, L["cancelled the trade with %s <%s>."]:format(name, guild))
     end
 end
 

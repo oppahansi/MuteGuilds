@@ -2,6 +2,7 @@
 -- switching settings, and editing the guild, word, name and player lists.
 
 local _, ns = ...
+local L = ns.L
 local IsSecret, Print = ns.IsSecret, ns.Print
 
 local MIN_NAME_WORD = 3 -- stops "a" from muting half the server
@@ -34,7 +35,7 @@ end
 -- Lists are shown alphabetically; the saved order doesn't matter.
 local function Sorted(list)
     if #list == 0 then
-        return "(none)"
+        return L["(none)"]
     end
     local copy = {}
     for i, v in ipairs(list) do
@@ -69,16 +70,16 @@ end
 
 -- label: printed with ON/OFF when the setting changes. apply: runs after it.
 local SETTINGS = {
-    enabled = { label = "filtering", apply = OnEnabledChanged },
-    declineGuild = { label = "auto-decline invites from muted guilds" },
-    declineGroup = { label = "auto-decline group invites from muted players", apply = ns.RecheckDeclines },
-    declineDuel = { label = "auto-decline duels from muted players", apply = ns.RecheckDeclines },
-    declineTrade = { label = "ask before trading with muted players" },
-    instantDecline = { label = "decline group invites and duels instantly", apply = ns.RecheckDeclines },
-    whisperWarn = { label = "warning when you whisper or invite a muted player" },
-    acceptShares = { label = "accepting shared lists from other players" },
+    enabled = { label = L["filtering"], apply = OnEnabledChanged },
+    declineGuild = { label = L["auto-decline invites from muted guilds"] },
+    declineGroup = { label = L["auto-decline group invites from muted players"], apply = ns.RecheckDeclines },
+    declineDuel = { label = L["auto-decline duels from muted players"], apply = ns.RecheckDeclines },
+    declineTrade = { label = L["ask before trading with muted players"] },
+    instantDecline = { label = L["decline group invites and duels instantly"], apply = ns.RecheckDeclines },
+    whisperWarn = { label = L["warning when you whisper or invite a muted player"] },
+    acceptShares = { label = L["accepting shared lists from other players"] },
     groupWarn = {
-        label = "warning when a muted player is in your group",
+        label = L["warning when a muted player is in your group"],
         apply = function(on)
             if on then
                 pcall(ns.CheckGroupForMuted)
@@ -86,7 +87,7 @@ local SETTINGS = {
         end,
     },
     hideBubbles = {
-        label = "hiding chat bubbles from muted players",
+        label = L["hiding chat bubbles from muted players"],
         apply = function(on)
             if not on then
                 ns.RestoreBubbles()
@@ -120,7 +121,7 @@ end
 
 function ns.GuildList()
     local names = ns.GuildNames()
-    return #names > 0 and table.concat(names, ", ") or "(none)"
+    return #names > 0 and table.concat(names, ", ") or L["(none)"]
 end
 
 -- Returns true if the guild was added. quiet: no chat output (shared lists).
@@ -131,13 +132,13 @@ function ns.AddGuild(name, quiet)
     end
     if ns.IsOwnGuild(name) then
         if not quiet then
-            Print("you can't mute the guild you are in.")
+            Print(L["you can't mute the guild you are in."])
         end
         return false
     end
     if ns.db.guilds[key] then
         if not quiet then
-            Print(('"%s" is already on the guild list.'):format(ns.db.guilds[key]))
+            Print(L['"%s" is already on the guild list.']:format(ns.db.guilds[key]))
         end
         return false
     end
@@ -146,7 +147,8 @@ function ns.AddGuild(name, quiet)
     ns.scanQueries = nil
     ns.DataChanged(true)
     if not quiet then
-        Print(('now muting the guild "%s" (the whole name has to match). Guild list: %s'):format(name, ns.GuildList()))
+        local text = L['now muting the guild "%s" (the whole name has to match). Guild list: %s']
+        Print(text:format(name, ns.GuildList()))
     end
     return true
 end
@@ -155,14 +157,14 @@ function ns.RemoveGuild(name)
     local key = ns.GuildKey(name)
     local saved = key and ns.db.guilds[key]
     if not saved then
-        Print(('"%s" isn\'t on the guild list. Guild list: %s'):format(name, ns.GuildList()))
+        Print(L['"%s" isn\'t on the guild list. Guild list: %s']:format(name, ns.GuildList()))
         return
     end
     ns.db.guilds[key] = nil
     ns.scanQueries = nil
     ns.DataChanged(true)
     local unmuted = ns.UnmuteOrphans()
-    Print(('removed "%s" (%d players unmuted). Guild list: %s'):format(saved, unmuted, ns.GuildList()))
+    Print(L['removed "%s" (%d players unmuted). Guild list: %s']:format(saved, unmuted, ns.GuildList()))
 end
 
 ---------------------------------------------------------------------------
@@ -181,12 +183,13 @@ end
 local function WordProblem(word)
     local exact = word:match('^"(.+)"$')
     if #(exact or word) < 3 then
-        return "filter entries need at least 3 characters."
+        return L["filter entries need at least 3 characters."]
     end
     if not exact then
         for part in word:gmatch("%S+") do
             if #part < 2 then
-                return ('"%s" is too short to filter on; single letters would hide almost everything.'):format(part)
+                local text = L['"%s" is too short to filter on; single letters would hide almost everything.']
+                return text:format(part)
             end
         end
     end
@@ -200,7 +203,7 @@ function ns.AddWord(text, quiet)
     local word = CleanWord(text)
     local problem = WordProblem(word)
     if not problem and IndexOf(ns.db.words, word) then
-        problem = Quoted(word) .. " is already filtered."
+        problem = L["%s is already filtered."]:format(Quoted(word))
     end
     if problem then
         if not quiet then
@@ -213,13 +216,13 @@ function ns.AddWord(text, quiet)
     if not quiet then
         local exact = word:match('^"(.+)"$')
         if exact then
-            Print(('hiding messages containing the exact phrase "%s".'):format(exact))
+            Print(L['hiding messages containing the exact phrase "%s".']:format(exact))
         elseif word:find(" ", 1, true) then
-            Print(("hiding messages that contain all of: %s (any order)."):format((word:gsub(" ", ", "))))
+            Print(L["hiding messages that contain all of: %s (any order)."]:format((word:gsub(" ", ", "))))
         else
-            Print(('hiding messages containing "%s".'):format(word))
+            Print(L['hiding messages containing "%s".']:format(word))
         end
-        Print("filtered words: " .. ns.WordList())
+        Print(L["filtered words: %s"]:format(ns.WordList()))
     end
     return true
 end
@@ -230,13 +233,13 @@ function ns.RemoveWord(text)
     local twin = word:match('^"(.*)"$') or ('"' .. word .. '"')
     local index = IndexOf(ns.db.words, word) or IndexOf(ns.db.words, twin)
     if not index then
-        Print(Quoted(word) .. " isn't filtered. Filtered words: " .. ns.WordList())
+        Print(L["%s isn't filtered. Filtered words: %s"]:format(Quoted(word), ns.WordList()))
         return
     end
     local removed = table.remove(ns.db.words, index)
     ns.ForgetWordParts()
     ns.DataChanged(false)
-    Print(("stopped filtering %s. Filtered words: %s"):format(Quoted(removed), ns.WordList()))
+    Print(L["stopped filtering %s. Filtered words: %s"]:format(Quoted(removed), ns.WordList()))
 end
 
 ---------------------------------------------------------------------------
@@ -253,13 +256,13 @@ end
 function ns.AddNameWord(text)
     local word = CleanNameWord(text)
     if #word < MIN_NAME_WORD then
-        Print(("name keywords need at least %d letters."):format(MIN_NAME_WORD))
+        Print(L["name keywords need at least %d letters."]:format(MIN_NAME_WORD))
     elseif IndexOf(ns.db.nameWords, word) then
-        Print(('"%s" is already on the name list.'):format(word))
+        Print(L['"%s" is already on the name list.']:format(word))
     else
         table.insert(ns.db.nameWords, word)
         ns.DataChanged(true)
-        local template = 'hiding chat from players whose name contains "%s". Name list: %s'
+        local template = L['hiding chat from players whose name contains "%s". Name list: %s']
         Print(template:format(word, ns.NameWordList()))
     end
 end
@@ -268,12 +271,12 @@ function ns.RemoveNameWord(text)
     local word = CleanNameWord(text)
     local index = IndexOf(ns.db.nameWords, word)
     if not index then
-        Print(('"%s" isn\'t on the name list. Name list: %s'):format(word, ns.NameWordList()))
+        Print(L['"%s" isn\'t on the name list. Name list: %s']:format(word, ns.NameWordList()))
         return
     end
     table.remove(ns.db.nameWords, index)
     ns.DataChanged(true)
-    Print(('removed "%s". Name list: %s'):format(word, ns.NameWordList()))
+    Print(L['removed "%s". Name list: %s']:format(word, ns.NameWordList()))
 end
 
 -- Options panel button: adds the text, or removes it if it's already listed.
@@ -296,7 +299,7 @@ function ns.AddPlayer(name)
         return
     end
     if key == ns.playerKey then
-        Print("you can't mute yourself.")
+        Print(L["you can't mute yourself."])
         return
     end
     -- Muting by hand ends "unmute while grouped" for them.
@@ -306,17 +309,17 @@ function ns.AddPlayer(name)
         db.allow[key] = nil
         db.manual[key] = true
         ns.Block(nil, name, ns.MANUAL_TAG)
-        Print("muted " .. name .. ".")
+        Print(L["muted %s."]:format(name))
     elseif hadPass then
         db.manual[key] = true
         ns.PurgeHistory(key)
-        Print(name .. " is muted again (ended unmute while grouped).")
+        Print(L["%s is muted again (ended unmute while grouped)."]:format(name))
     elseif db.manual[key] then
-        Print(name .. " is already muted.")
+        Print(L["%s is already muted."]:format(name))
     else
         -- Found automatically before: pin them so a guild change doesn't unmute them.
         db.manual[key] = true
-        Print(name .. " will now stay muted even if they change guilds.")
+        Print(L["%s will now stay muted even if they change guilds."]:format(name))
     end
     ns.DataChanged(true)
 end
@@ -326,9 +329,9 @@ function ns.RemovePlayer(name)
     local key = ns.ResolveKey(name)
     if key and ns.db.players[key] then
         ns.Unblock(nil, name, true)
-        Print("unmuted " .. name .. ".")
+        Print(L["unmuted %s."]:format(name))
     else
-        Print(name .. " isn't on the mute list.")
+        Print(L["%s isn't on the mute list."]:format(name))
     end
 end
 
@@ -346,7 +349,7 @@ function ns.NeverMute(key, display)
         end
     end
     ns.DataChanged(true)
-    Print(tostring(display or key) .. " will never be muted.")
+    Print(L["%s will never be muted."]:format(tostring(display or key)))
 end
 
 -- Never-mute list from typed input: toggles the player on or off it.
@@ -359,7 +362,7 @@ function ns.AllowPlayer(name)
     if ns.db.allow[key] then
         ns.db.allow[key] = nil
         ns.DataChanged(true)
-        Print(name .. " can be muted again.")
+        Print(L["%s can be muted again."]:format(name))
     else
         ns.NeverMute(key, name)
     end
@@ -370,9 +373,9 @@ function ns.CheckPlayer(name)
     local key = ns.ResolveKey(name)
     local guild = key and ns.db.players[key]
     if guild then
-        Print(("%s is muted <%s>."):format(name, guild))
+        Print(L["%s is muted <%s>."]:format(name, ns.TagText(guild)))
     else
-        Print(name .. " is not on the mute list.")
+        Print(L["%s isn't on the mute list."]:format(name))
     end
 end
 
@@ -383,12 +386,11 @@ function ns.ClearPlayers()
     wipe(db.manual)
     wipe(db.former)
     ns.DataChanged(true)
-    Print("cleared all muted players.")
+    Print(L["cleared all muted players."])
 end
 
 StaticPopupDialogs["MUTEGUILDS_CLEAR"] = {
-    text = "Unmute all %s players on your mute list?\n\nThis can't be undone (you'd need to scan again). "
-        .. "Your guild list is kept.",
+    text = L.POPUP_CLEAR,
     button1 = YES,
     button2 = NO,
     OnAccept = ns.ClearPlayers,
@@ -439,23 +441,23 @@ local function ImportIgnores(clearIgnoreList)
         end
     end
     ns.DataChanged(true)
-    local text = "imported %d players from your ignore list (%d were already muted)"
     if clearIgnoreList then
-        Print((text .. " and removed %d from the ignore list."):format(added, already, removed))
+        local text = L["imported %d players from your ignore list (%d were already muted), removed %d from it."]
+        Print(text:format(added, already, removed))
     else
-        Print((text .. ". Your ignore list is unchanged."):format(added, already))
+        local text = L["imported %d players from your ignore list (%d were already muted). It is unchanged."]
+        Print(text:format(added, already))
     end
     if skipped > 0 then
-        Print(("skipped %d on your never-mute list (left on your ignore list)."):format(skipped))
+        Print(L["skipped %d on your never-mute list (left on your ignore list)."]:format(skipped))
     end
 end
 
 StaticPopupDialogs["MUTEGUILDS_IMPORT"] = {
-    text = "Add the %s players on your ignore list to your MuteGuilds list?\n\n"
-        .. "They'll stay muted whatever guild they're in. Removing them from the ignore list frees up ignore slots.",
-    button1 = "Import",
+    text = L.POPUP_IMPORT,
+    button1 = L["Import"],
     button2 = CANCEL,
-    button3 = "Import + clear ignore list",
+    button3 = L["Import + clear ignore list"],
     OnAccept = function()
         ImportIgnores(false)
     end,
@@ -471,7 +473,7 @@ StaticPopupDialogs["MUTEGUILDS_IMPORT"] = {
 function ns.StartIgnoreImport()
     local count = #IgnoredNames()
     if count == 0 then
-        Print("your ignore list is empty, nothing to import.")
+        Print(L["your ignore list is empty, nothing to import."])
     else
         StaticPopup_Show("MUTEGUILDS_IMPORT", tostring(count))
     end

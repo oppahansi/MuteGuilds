@@ -1,17 +1,20 @@
 -- Commands.lua: the /muteguilds (or /mg) slash command.
 
 local _, ns = ...
+local L = ns.L
 local Print = ns.Print
 
+-- The commands and their keywords are the same in every language; only the
+-- explanations around them are translated.
 local HELP = {
-    "/mg (opens the options) | on | off | list | log | scan | tally | import | clear",
-    "/mg guild add|remove Exact Guild Name",
-    "/mg add|remove|allow|check Player Name    (allow again to undo)",
-    "/mg word add|remove text  |  name add|remove text",
+    L["/mg (opens the options) | on | off | list | log | scan | tally | import | clear"],
+    L["/mg guild add|remove Exact Guild Name"],
+    L["/mg add|remove|allow|check Player Name    (allow again to undo)"],
+    L["/mg word add|remove text  |  name add|remove text"],
     "/mg invites|guildinvites|groupinvites|duels|trades|instant|bubbles|groupwarn|whisperwarn|shares on|off",
     "/mg share [Name|guild]",
-    "/mg debug off|dry|live    (dry: report only, hide nothing; live: hide and report)",
-    "Separate several names or words with commas: /mg add Name1, Name2",
+    L["/mg debug off|dry|live    (dry: report only, hide nothing; live: hide and report)"],
+    L["Separate several names or words with commas: /mg add Name1, Name2"],
 }
 
 -- "<command> on|off" switches these settings.
@@ -32,9 +35,9 @@ local TOGGLES = {
 -- "<command> add|remove <text>" edits these lists; without a valid
 -- sub-command the list is printed.
 local LISTS = {
-    guild = { add = ns.AddGuilds, remove = ns.RemoveGuilds, show = ns.GuildList, label = "guild list" },
-    word = { add = ns.AddWords, remove = ns.RemoveWords, show = ns.WordList, label = "filtered words" },
-    name = { add = ns.AddNameWords, remove = ns.RemoveNameWords, show = ns.NameWordList, label = "name list" },
+    guild = { add = ns.AddGuilds, remove = ns.RemoveGuilds, show = ns.GuildList, label = L["guild list"] },
+    word = { add = ns.AddWords, remove = ns.RemoveWords, show = ns.WordList, label = L["filtered words"] },
+    name = { add = ns.AddNameWords, remove = ns.RemoveNameWords, show = ns.NameWordList, label = L["name list"] },
 }
 
 -- "<command> <text>" commands that need the text.
@@ -47,7 +50,7 @@ local WITH_TEXT = {
 
 local function PrintTally()
     Print(
-        ("hidden %s messages (%s this session) from %s muted players."):format(
+        L["hidden %s messages (%s this session) from %s muted players."]:format(
             ns.FormatNum(ns.db.hiddenTotal),
             ns.FormatNum(ns.sessionHidden),
             ns.FormatNum(ns.CountMuted())
@@ -57,7 +60,7 @@ end
 
 local function PrintHelp()
     Print(
-        ("filtering %s, %d players muted, debug mode %s."):format(
+        L["filtering %s, %d players muted, debug mode %s."]:format(
             ns.OnOff(ns.db.enabled),
             ns.CountMuted(),
             ns.DebugModeText()

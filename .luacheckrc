@@ -26,6 +26,7 @@ read_globals = {
     "time",
     "Enum",
     "BreakUpLargeNumbers",
+    "GetLocale",
     -- frames and UI
     "CreateFrame",
     "UIParent",

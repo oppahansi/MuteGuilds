@@ -5,13 +5,14 @@
 --   live  normal operation, and every hit is reported as it happens
 
 local _, ns = ...
+local L = ns.L
 
 ns.DEBUG_MODES = { off = true, dry = true, live = true }
 
 local DESCRIPTION = {
-    off = "|cffff0000OFF|r",
-    dry = "|cffffd100DRY RUN|r: nothing is hidden or declined, hits are only reported",
-    live = "|cff00ff00LIVE|r: everything works as normal, and each hit is reported",
+    off = "|cffff0000" .. L["OFF"] .. "|r",
+    dry = L["|cffffd100DRY RUN|r: nothing is hidden or declined, hits are only reported"],
+    live = L["|cff00ff00LIVE|r: everything works as normal, and each hit is reported"],
 }
 
 -- True while nothing may actually be hidden, removed or declined.
@@ -31,7 +32,7 @@ function ns.Debug(text, ...)
 end
 
 -- The verb for something that happens for real only outside a dry run:
--- ns.Did("hid", "would hide").
+-- ns.Did(L["hid"], L["would hide"]).
 function ns.Did(done, wouldDo)
     return ns.IsDryRun() and wouldDo or done
 end
@@ -42,9 +43,8 @@ end
 
 function ns.SetDebugMode(mode)
     if not ns.DEBUG_MODES[mode] then
-        ns.Print(
-            "debug modes: off, dry (report only, hide nothing), live (hide and report). Now: " .. ns.DebugModeText()
-        )
+        local text = L["debug modes: off, dry (report only, hide nothing), live (hide and report). Now: %s"]
+        ns.Print(text:format(ns.DebugModeText()))
         return
     end
     ns.db.debugMode = mode
@@ -54,7 +54,7 @@ function ns.SetDebugMode(mode)
         ns.RestoreBubbles()
         ns.CancelPurges()
     end
-    ns.Print("debug mode " .. ns.DebugModeText())
+    ns.Print(L["debug mode %s"]:format(ns.DebugModeText()))
     ns.RefreshViews()
 end
 

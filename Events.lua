@@ -90,7 +90,7 @@ function handlers.PLAYER_LOGIN()
     end)
 
     if ns.db.debugMode ~= "off" then
-        ns.Print("debug mode " .. ns.DebugModeText())
+        ns.Print(ns.L["debug mode %s"]:format(ns.DebugModeText()))
     end
 end
 

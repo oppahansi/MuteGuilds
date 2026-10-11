@@ -4,6 +4,7 @@
 -- split into level ranges, reaching members a plain search cuts off.
 
 local _, ns = ...
+local L = ns.L
 local Print = ns.Print
 
 local COOLDOWN = 5 -- seconds between scans; the server throttles /who
@@ -64,19 +65,19 @@ end
 function ns.WhoScan()
     local queries = Queries()
     if #queries == 0 then
-        Print("the guild list is empty, nothing to scan.")
+        Print(L["the guild list is empty, nothing to scan."])
         return
     end
     local left = ns.ScanCooldownLeft()
     if left > 0 then
-        Print(("next scan ready in %d s."):format(math.ceil(left)))
+        Print(L["next scan ready in %d s."]:format(math.ceil(left)))
         return
     end
     stepBeforeSend = step
     step = step % #queries + 1
     lastScanAt = GetTime()
     C_FriendList.SendWho(queries[step])
-    Print(("scan %d/%d: /who %s"):format(step, #queries, queries[step]))
+    Print(L["scan %d/%d: /who %s"]:format(step, #queries, queries[step]))
     -- Listen for the server's "too soon" notice only after our own lines.
     sentAt = GetTime()
     ns.RefreshViews()
@@ -85,6 +86,20 @@ end
 -- "You must wait a moment longer before using /who again": the search didn't
 -- run, so step back and let the next scan repeat it. Called for every line
 -- added to chat; only looks in the 2 seconds after a scan.
+-- The notice is the game's own text, so it is recognised by words from it. The
+-- German ones are a guess at its wording: not confirmed yet.
+local THROTTLE_COMMANDS = { "/who", "/wer" }
+local THROTTLE_WORDS = { "wait", "again", "warte", "erneut", "wieder" }
+
+local function FindAny(text, words)
+    for _, word in ipairs(words) do
+        if text:find(word, 1, true) then
+            return true
+        end
+    end
+    return false
+end
+
 function ns.CheckWhoThrottle(msg)
     if not sentAt or GetTime() - sentAt > 2 then
         return
@@ -94,10 +109,10 @@ function ns.CheckWhoThrottle(msg)
         return
     end
     local text = msg:lower()
-    if text:find("/who", 1, true) and (text:find("wait", 1, true) or text:find("again", 1, true)) then
+    if FindAny(text, THROTTLE_COMMANDS) and FindAny(text, THROTTLE_WORDS) then
         step, sentAt = stepBeforeSend, nil
         lastScanAt = GetTime()
-        Print("the server wanted a longer pause; that search will run again on your next scan.")
+        Print(L["the server wanted a longer pause; that search will run again on your next scan."])
         ns.RefreshViews()
     end
 end

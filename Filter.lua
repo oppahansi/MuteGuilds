@@ -2,6 +2,7 @@
 -- filter, and keeps the in-memory log of what was hidden.
 
 local _, ns = ...
+local L = ns.L
 local IsSecret = ns.IsSecret
 
 local CHAT_EVENTS = {
@@ -177,18 +178,18 @@ local function Decide(msg, author, guid, flag)
         return false -- unmuted while grouped
     end
     if guid ~= ns.playerGUID and guidKey and db.players[guidKey] ~= nil and not db.allow[guidKey] then
-        return "muted player <" .. db.players[guidKey] .. ">"
+        return L["muted player <%s>"]:format(ns.TagText(db.players[guidKey]))
     end
     if key and key ~= ns.playerKey and db.players[key] ~= nil and not db.allow[key] then
-        return "muted player <" .. db.players[key] .. ">"
+        return L["muted player <%s>"]:format(ns.TagText(db.players[key]))
     end
     if FilterExempt(key, guid, flag) then
         return false
     end
     if NameWordBlocked(author) then
-        return "name keyword"
+        return L["name keyword"]
     end
-    return WordBlocked(msg) and "word filter"
+    return WordBlocked(msg) and L["word filter"]
 end
 
 -- Should this message be hidden? Returns the reason (or false), and whether
@@ -219,12 +220,12 @@ local function OnHit(reason, event, msg, author, lineID, guid)
     lastHiddenLine, lastHiddenEvent = usable and lineID or nil, usable and event or nil
     local msgUsable = not IsSecret(msg)
     ns.Debug(
-        "%s a %s message from %s (%s): %s",
-        ns.Did("hid", "would hide"),
+        L["%s a %s message from %s (%s): %s"],
+        ns.Did(L["hid"], L["would hide"]),
         event:gsub("^CHAT_MSG_", ""):lower(),
         author,
         reason,
-        msgUsable and msg or "(unreadable text)"
+        msgUsable and msg or L["(unreadable text)"]
     )
     if ns.IsDryRun() then
         return

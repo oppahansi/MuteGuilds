@@ -2,6 +2,7 @@
 -- Both are built on first use.
 
 local _, ns = ...
+local L = ns.L
 local IsSecret, Print = ns.IsSecret, ns.Print
 
 local ROW_HEIGHT = 16
@@ -102,12 +103,13 @@ local function BuildListLines(search)
     end
     table.sort(allowed)
     for _, key in ipairs(allowed) do
-        lines[#lines + 1] = "|cff66ff66never muted|r  " .. key
+        lines[#lines + 1] = "|cff66ff66" .. L["never muted"] .. "|r  " .. key
     end
 
     local total, muted = 0, {}
     for key, guild in pairs(db.players) do
         total = total + 1
+        guild = ns.TagText(guild)
         local guildLower = guild:lower()
         if not filter or key:find(filter, 1, true) or guildLower:find(filter, 1, true) then
             muted[#muted + 1] = { key = key, guild = guild, guildLower = guildLower }
@@ -132,12 +134,12 @@ local function CreateListWindow()
     local lines = {}
 
     local search = CreateFrame("EditBox", nil, window, "InputBoxTemplate")
-    search:SetSize(200, 20)
+    search:SetSize(180, 20)
     search:SetPoint("TOPLEFT", 22, -32)
     search:SetAutoFocus(false)
     local hint = search:CreateFontString(nil, "OVERLAY", "GameFontDisable")
     hint:SetPoint("LEFT", 4, 0)
-    hint:SetText("Search name or guild")
+    hint:SetText(L["Search name or guild"])
     local found = window:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     found:SetPoint("LEFT", search, "RIGHT", 10, 0)
 
@@ -161,20 +163,20 @@ local function CreateListWindow()
         local text = search:GetText() or ""
         local total
         lines, total = BuildListLines(text)
-        self.title:SetText(("MuteGuilds: muted players (%s)"):format(ns.FormatNum(total)))
+        self.title:SetText(L["MuteGuilds: muted players (%s)"]:format(ns.FormatNum(total)))
         hint:SetShown(text == "" and not search:HasFocus())
-        found:SetText(text ~= "" and ("%s found"):format(ns.FormatNum(#lines)) or "")
+        found:SetText(text ~= "" and L["%s found"]:format(ns.FormatNum(#lines)) or "")
         if #lines == 0 then
-            lines = { text ~= "" and "|cff999999No matches.|r" or "|cff999999No players muted yet.|r" }
+            lines = { "|cff999999" .. (text ~= "" and L["No matches."] or L["No players muted yet."]) .. "|r" }
         end
         scroller:Update(#lines)
     end
 
     local sortButton = CreateFrame("Button", nil, window, "UIPanelButtonTemplate")
-    sortButton:SetSize(110, 22)
+    sortButton:SetSize(130, 22)
     sortButton:SetPoint("TOPRIGHT", -16, -30)
     local function UpdateSortLabel()
-        sortButton:SetText(ns.db.listSort == "guild" and "Sort: Guild" or "Sort: Name")
+        sortButton:SetText(ns.db.listSort == "guild" and L["Sort: Guild"] or L["Sort: Name"])
     end
     UpdateSortLabel()
     sortButton:SetScript("OnClick", function()
@@ -213,23 +215,23 @@ local LOG_ROWS, LOG_TOP = 22, 56
 local logWindow
 
 local CHANNEL_LABEL = {
-    CHAT_MSG_SAY = "Say",
-    CHAT_MSG_YELL = "Yell",
-    CHAT_MSG_EMOTE = "Emote",
-    CHAT_MSG_TEXT_EMOTE = "Emote",
-    CHAT_MSG_WHISPER = "Whisper",
-    CHAT_MSG_CHANNEL = "Channel",
-    CHAT_MSG_GUILD = "Guild",
-    CHAT_MSG_OFFICER = "Officer",
-    CHAT_MSG_PARTY = "Party",
-    CHAT_MSG_PARTY_LEADER = "Party",
-    CHAT_MSG_RAID = "Raid",
-    CHAT_MSG_RAID_LEADER = "Raid",
-    CHAT_MSG_RAID_WARNING = "Raid Warning",
-    CHAT_MSG_INSTANCE_CHAT = "Instance",
-    CHAT_MSG_INSTANCE_CHAT_LEADER = "Instance",
-    CHAT_MSG_AFK = "Auto-reply",
-    CHAT_MSG_DND = "Auto-reply",
+    CHAT_MSG_SAY = L["Say"],
+    CHAT_MSG_YELL = L["Yell"],
+    CHAT_MSG_EMOTE = L["Emote"],
+    CHAT_MSG_TEXT_EMOTE = L["Emote"],
+    CHAT_MSG_WHISPER = L["Whisper"],
+    CHAT_MSG_CHANNEL = L["Channel"],
+    CHAT_MSG_GUILD = L["Guild"],
+    CHAT_MSG_OFFICER = L["Officer"],
+    CHAT_MSG_PARTY = L["Party"],
+    CHAT_MSG_PARTY_LEADER = L["Party"],
+    CHAT_MSG_RAID = L["Raid"],
+    CHAT_MSG_RAID_LEADER = L["Raid"],
+    CHAT_MSG_RAID_WARNING = L["Raid Warning"],
+    CHAT_MSG_INSTANCE_CHAT = L["Instance"],
+    CHAT_MSG_INSTANCE_CHAT_LEADER = L["Instance"],
+    CHAT_MSG_AFK = L["Auto-reply"],
+    CHAT_MSG_DND = L["Auto-reply"],
 }
 
 local function ShortName(author)
@@ -241,33 +243,33 @@ local function PlainText(msg)
     return (msg:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub("|H.-|h(.-)|h", "%1"):gsub("|T.-|t", ""))
 end
 
-local CANT_REPORT = "You can still report the player from their right-click menu."
+local CANT_REPORT = L["You can still report the player from their right-click menu."]
 
 -- Opens Blizzard's report window for a logged chat line.
 local function ReportEntry(entry)
     if not entry.lineID then
-        Print("this message can't be reported from here. " .. CANT_REPORT)
+        Print(L["this message can't be reported from here."] .. " " .. CANT_REPORT)
         return
     end
     local ok, err = pcall(function()
         local location = PlayerLocation:CreateFromChatLineID(entry.lineID)
         if not C_ReportSystem.CanReportPlayer(location) then
-            Print("this message can't be reported anymore (it may be too old). " .. CANT_REPORT)
+            Print(L["this message can't be reported anymore (it may be too old)."] .. " " .. CANT_REPORT)
             return
         end
         local info = ReportInfo:CreateReportInfoFromType(Enum.ReportType.Chat)
         ReportFrame:InitiateReport(info, entry.author, location)
     end)
     if not ok then
-        Print("couldn't open the report window: " .. tostring(err))
+        Print(L["couldn't open the report window: %s"]:format(tostring(err)))
     end
 end
 
 StaticPopupDialogs["MUTEGUILDS_LOGMSG"] = {
-    text = "%s said:\n\n%s",
-    button1 = "Report...",
+    text = L["%s said:\n\n%s"],
+    button1 = L["Report..."],
     button2 = CLOSE,
-    button3 = "Never mute",
+    button3 = L["Never mute"],
     OnAccept = function(_, entry)
         ReportEntry(entry)
     end,
@@ -286,7 +288,7 @@ local function OpenLogEntry(entry)
     if #text > 220 then
         text = text:sub(1, 220) .. "..."
     end
-    local who = ("%s (%s, %s)"):format(ShortName(entry.author), CHANNEL_LABEL[entry.event] or "Chat", entry.clock)
+    local who = ("%s (%s, %s)"):format(ShortName(entry.author), CHANNEL_LABEL[entry.event] or L["Chat"], entry.clock)
     StaticPopup_Show("MUTEGUILDS_LOGMSG", who, '"' .. text .. '"', entry)
 end
 
@@ -309,7 +311,7 @@ local function CreateLogRow(window, index)
         GameTooltip:SetOwner(self, "ANCHOR_CURSOR")
         GameTooltip:SetText(ShortName(self.entry.author))
         GameTooltip:AddLine(PlainText(self.entry.text), 1, 1, 1, true)
-        GameTooltip:AddLine("Click to report or never mute", 0.6, 0.6, 0.6)
+        GameTooltip:AddLine(L["Click to report or never mute"], 0.6, 0.6, 0.6)
         GameTooltip:Show()
     end)
     row:SetScript("OnLeave", GameTooltip_Hide)
@@ -318,15 +320,18 @@ end
 
 local function CreateLogWindow()
     local window = CreateWindow("MuteGuildsLogWindow", 560, 440)
-    window.title:SetText("MuteGuilds: muted messages")
+    window.title:SetText(L["MuteGuilds: muted messages"])
     local entries = {}
 
     local hint = window:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
     hint:SetPoint("TOPLEFT", 20, -34)
-    hint:SetText("Last 15 minutes, cleared on /reload. Click a message to report it or never mute the sender.")
+    hint:SetPoint("RIGHT", window, "RIGHT", -20, 0)
+    hint:SetJustifyH("LEFT")
+    hint:SetWordWrap(false)
+    hint:SetText(L["Last 15 minutes, cleared on /reload. Click a message to report it or never mute the sender."])
     local empty = window:CreateFontString(nil, "OVERLAY", "GameFontDisable")
     empty:SetPoint("TOP", 0, -(LOG_TOP + 20))
-    empty:SetText("No muted messages in the last 15 minutes.")
+    empty:SetText(L["No muted messages in the last 15 minutes."])
 
     local rows = {}
     for i = 1, LOG_ROWS do
@@ -342,7 +347,7 @@ local function CreateLogWindow()
                 row.label:SetText(
                     ("|cff999999%s [%s]|r |cffffd100%s|r: %s"):format(
                         entry.clock,
-                        CHANNEL_LABEL[entry.event] or "Chat",
+                        CHANNEL_LABEL[entry.event] or L["Chat"],
                         ShortName(entry.author),
                         PlainText(entry.text)
                     )
@@ -358,9 +363,9 @@ local function CreateLogWindow()
     end
 
     local clear = CreateFrame("Button", nil, window, "UIPanelButtonTemplate")
-    clear:SetSize(100, 22)
+    clear:SetSize(130, 22)
     clear:SetPoint("BOTTOMRIGHT", -16, 14)
-    clear:SetText("Clear log")
+    clear:SetText(L["Clear log"])
     clear:SetScript("OnClick", function()
         ns.ClearLog()
         window:Refresh()

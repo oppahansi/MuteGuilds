@@ -6,6 +6,7 @@
 -- Payload:  v1;g:<guild name>;w:<word entry>;...   (values percent-escaped)
 
 local _, ns = ...
+local L = ns.L
 local IsSecret, Print = ns.IsSecret, ns.Print
 
 local PREFIX = "MuteGuilds"
@@ -87,16 +88,16 @@ end
 local function Destination(target)
     if target == "" then
         if IsInRaid() then
-            return "RAID", nil, "your group"
+            return "RAID", nil, L["your group"]
         elseif IsInGroup() then
-            return "PARTY", nil, "your group"
+            return "PARTY", nil, L["your group"]
         end
-        return nil, nil, "join a group to share with it, or type a name: /mg share Name"
+        return nil, nil, L["join a group to share with it, or type a name: /mg share Name"]
     elseif target:lower() == "guild" then
         if not IsInGuild() then
-            return nil, nil, "you're not in a guild."
+            return nil, nil, L["you're not in a guild."]
         end
-        return "GUILD", nil, "your guild"
+        return "GUILD", nil, L["your guild"]
     end
     return "WHISPER", target, target
 end
@@ -110,7 +111,7 @@ function ns.SendShare(target)
     end
     local payload, sentGuilds, sentWords, left = BuildPayload()
     if sentGuilds + sentWords == 0 then
-        Print("your guild list and word filter are both empty, nothing to share.")
+        Print(L["your guild list and word filter are both empty, nothing to share."])
         return
     end
     local id = tostring(math.random(10000, 99999))
@@ -125,13 +126,13 @@ function ns.SendShare(target)
         if ok and THROTTLED[result] then
             retries = retries + 1
             if retries > 5 then
-                Print("sharing failed: the game is limiting addon messages right now. Try again in a minute.")
+                Print(L["sharing failed: the game is limiting addon messages right now. Try again in a minute."])
                 return
             end
             C_Timer.After(1, SendNext)
             return
         elseif not ok or (result ~= true and result ~= 0 and result ~= nil) then
-            Print(("sharing failed (the game refused the message, code %s)."):format(tostring(result)))
+            Print(L["sharing failed (the game refused the message, code %s)."]:format(tostring(result)))
             return
         end
         if piece < total then
@@ -139,22 +140,21 @@ function ns.SendShare(target)
             C_Timer.After(0.2, SendNext)
             return
         end
-        local text = "shared %d guild names and %d filtered words with %s. They'll be asked before anything changes."
+        local text = L["shared %d guild names and %d filtered words with %s. They'll be asked before anything changes."]
         Print(text:format(sentGuilds, sentWords, who))
         if left > 0 then
-            Print(("(%d more entries didn't fit in one share.)"):format(left))
+            Print(L["(%d more entries didn't fit in one share.)"]:format(left))
         end
         if channel == "WHISPER" then
-            Print("(shares sent by whisper only arrive if you're on their friends list or in their group.)")
+            Print(L["(shares sent by whisper only arrive if you're on their friends list or in their group.)"])
         end
     end
     SendNext()
 end
 
 StaticPopupDialogs["MUTEGUILDS_SHARE_SEND"] = {
-    text = "Share your guild names and filtered words with:\n"
-        .. "(a player's name, or leave empty to share with your group)",
-    button1 = "Share",
+    text = L.POPUP_SHARE_SEND,
+    button1 = L["Share"],
     button2 = CANCEL,
     hasEditBox = 1,
     OnAccept = function(self)
@@ -213,27 +213,28 @@ end
 
 local function Summary(list)
     if #list == 0 then
-        return "(none)"
+        return L["(none)"]
     end
     local text = table.concat(list, ", ", 1, math.min(5, #list))
     if #list > 5 then
-        text = text .. (" and %d more"):format(#list - 5)
+        text = text .. L[" and %d more"]:format(#list - 5)
     end
     return text
 end
 
 StaticPopupDialogs["MUTEGUILDS_SHARE"] = {
-    text = "%s wants to share their MuteGuilds lists with you.\n\n%s\n\nNothing changes unless you choose below.",
-    button1 = "Add to mine",
+    text = L["%s wants to share their MuteGuilds lists with you.\n\n%s\n\nNothing changes unless you choose below."],
+    button1 = L["Add to mine"],
     button2 = CANCEL,
-    button3 = "Replace mine",
+    button3 = L["Replace mine"],
     OnAccept = function(_, data)
         local guilds, words = Merge(data.guilds, data.words)
-        Print(("added %d guild names and %d filtered words from %s."):format(guilds, words, data.from))
+        Print(L["added %d guild names and %d filtered words from %s."]:format(guilds, words, data.from))
     end,
     OnAlt = function(_, data)
         local guilds, words = Replace(data.guilds, data.words)
-        Print(("replaced your lists with %s's: %d guild names, %d filtered words."):format(data.from, guilds, words))
+        local text = L["replaced your lists with %s's: %d guild names, %d filtered words."]
+        Print(text:format(data.from, guilds, words))
     end,
     timeout = 0,
     whileDead = true,
@@ -320,17 +321,13 @@ local function OnShareMessage(text, channel, sender)
     if StaticPopup_Visible("MUTEGUILDS_SHARE") then
         return
     end
-    local preview = ("Guild names (%d): %s\nFiltered words (%d): %s"):format(
-        #guilds,
-        Summary(guilds),
-        #words,
-        Summary(words)
-    )
+    local preview =
+        L["Guild names (%d): %s\nFiltered words (%d): %s"]:format(#guilds, Summary(guilds), #words, Summary(words))
     local data = { from = sender, guilds = guilds, words = words }
     if StaticPopup_Show("MUTEGUILDS_SHARE", sender, preview, data) then
         lastOfferFrom[key], lastOfferAt = now, now -- the limits count only offers that were shown
     else
-        local notice = "%s shared their lists, but the window couldn't open right now. Ask them to send it again."
+        local notice = L["%s shared their lists, but the window couldn't open right now. Ask them to send it again."]
         ns.PrintThrottled("sharefail:" .. key, notice:format(sender))
     end
 end

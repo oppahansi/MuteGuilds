@@ -1,6 +1,7 @@
 -- Options.lua: the page under Options > AddOns.
 
 local _, ns = ...
+local L = ns.L
 local Print = ns.Print
 
 local COLUMN_2 = 300 -- x offset of the second checkbox column
@@ -45,8 +46,9 @@ end
 
 local function CreateButton(parent, text, width, onClick)
     local button = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
-    button:SetSize(width, 22)
     button:SetText(text)
+    -- width is the least it gets: a longer (translated) label widens it.
+    button:SetSize(math.max(width, button:GetTextWidth() + 20), 22)
     button:SetScript("OnClick", onClick)
     return button
 end
@@ -98,17 +100,20 @@ end
 -- The panel
 ---------------------------------------------------------------------------
 local CHECKS = { -- setting, text; two per row
-    { "enabled", "Enable filtering" },
-    { "hideBubbles", "Hide their chat bubbles (open world)" },
-    { "declineGuild", "Auto-decline guild invites" },
-    { "declineGroup", "Auto-decline group invites" },
-    { "declineDuel", "Auto-decline duels" },
-    { "declineTrade", "Ask before trades" },
-    { "instantDecline", "Decline group invites and duels instantly" },
-    { "acceptShares", "Accept shared lists" },
-    { "groupWarn", "Warn when a muted player is in my group" },
-    { "whisperWarn", "Warn if I whisper/invite a muted player" },
+    { "enabled", L["Enable filtering"] },
+    { "hideBubbles", L["Hide their chat bubbles (open world)"] },
+    { "declineGuild", L["Auto-decline guild invites"] },
+    { "declineGroup", L["Auto-decline group invites"] },
+    { "declineDuel", L["Auto-decline duels"] },
+    { "declineTrade", L["Ask before trades"] },
+    { "instantDecline", L["Decline group invites and duels instantly"] },
+    { "acceptShares", L["Accept shared lists"] },
+    { "groupWarn", L["Warn when a muted player is in my group"] },
+    { "whisperWarn", L["Warn if I whisper/invite a muted player"] },
 }
+
+-- The debug mode as the Debug button shows it.
+local DEBUG_LABEL = { off = L["off"], dry = L["dry run"], live = L["live"] }
 
 local function CreateChecks(parent, anchor)
     local checks, rowStart = {}, nil
@@ -134,14 +139,7 @@ local function CreatePanel()
 
     local title = CreateLabel(panel, "GameFontNormalLarge", "MuteGuilds")
     title:SetPoint("TOPLEFT", 16, -16)
-    local description = CreateLabel(
-        panel,
-        "GameFontHighlightSmall",
-        "Hides chat from players in the guilds on your list. A guild is matched on its whole name, never on a "
-            .. "part of it. Only affects your screen and doesn't use your ignore list. Chat doesn't show a player's "
-            .. "guild, so players are added automatically when you target them, mouse over them, see their "
-            .. "nameplate, group with them, or find them with /who (the Scan button)."
-    )
+    local description = CreateLabel(panel, "GameFontHighlightSmall", L.OPTIONS_DESCRIPTION)
     description:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -8)
     description:SetPoint("RIGHT", panel, "RIGHT", -16, 0)
     local stats = CreateLabel(panel, "GameFontHighlight")
@@ -150,108 +148,101 @@ local function CreatePanel()
     local checks, lastRow = CreateChecks(panel, stats)
 
     local guildText =
-        CreateListEditor(panel, lastRow, "Muted guilds (exact name, upper or lower case doesn't matter):", {
+        CreateListEditor(panel, lastRow, L["Muted guilds (exact name, upper or lower case doesn't matter):"], {
             {
-                "Add guild",
+                L["Add guild"],
                 90,
                 ns.AddGuilds,
-                "Mutes the guild with exactly this name. A guild whose name only contains it is not muted.",
-                "Add several at once with commas: First Guild, Second Guild",
+                L["Mutes the guild with exactly this name. A guild whose name only contains it is not muted."],
+                L["Add several at once with commas: First Guild, Second Guild"],
             },
-            { "Remove guild", 110, ns.RemoveGuilds },
+            { L["Remove guild"], 110, ns.RemoveGuilds },
         })
 
-    local scanButton = CreateButton(panel, "Scan /who", 200, ns.WhoScan)
+    local scanButton = CreateButton(panel, L["Scan /who"], 200, ns.WhoScan)
     scanButton:SetPoint("TOPLEFT", guildText, "BOTTOMLEFT", 0, -6)
-    local shareButton = CreateButton(panel, "Share lists...", 120, ns.PromptShare)
+    local shareButton = CreateButton(panel, L["Share lists..."], 120, ns.PromptShare)
     shareButton:SetPoint("LEFT", scanButton, "RIGHT", 12, 0)
     AddTooltip(
         shareButton,
-        "Share lists",
-        "Send your guild names and filtered words to another MuteGuilds user, or to your whole group.",
-        "They see what's in it and choose to add it to theirs, replace theirs, or cancel. Players are never shared.",
-        "Shares are only accepted from your group, your guild, or your friends list."
+        L["Share lists"],
+        L["Send your guild names and filtered words to another MuteGuilds user, or to your whole group."],
+        L["They see what's in it and choose to add it to theirs, replace theirs, or cancel. Players are never shared."],
+        L["Shares are only accepted from your group, your guild, or your friends list."]
     )
     local debugButton = CreateButton(panel, "Debug", 130, ns.CycleDebugMode)
     debugButton:SetPoint("LEFT", shareButton, "RIGHT", 12, 0)
     AddTooltip(
         debugButton,
-        "Debug mode",
-        "Dry run: nothing is hidden or declined. Each hit is reported with what would have happened and why.",
-        "Live: everything works as normal, and each hit is reported as it happens.",
-        "Click to switch between off, dry run and live."
+        L["Debug mode"],
+        L["Dry run: nothing is hidden or declined. Each hit is reported with what would have happened and why."],
+        L["Live: everything works as normal, and each hit is reported as it happens."],
+        L["Click to switch between off, dry run and live."]
     )
 
     local wordText =
-        CreateListEditor(panel, scanButton, "Hide messages from anyone containing all of these words (any order):", {
+        CreateListEditor(panel, scanButton, L["Hide messages from anyone containing all of these words (any order):"], {
             {
-                "Add word",
+                L["Add word"],
                 90,
                 ns.AddWords,
-                'A message is hidden if it contains every word you enter, in any order. "inv layer" hides '
-                    .. '"invite to that layer pls". Parts also match inside longer words.',
-                "Put it in quotes to match only that exact phrase.",
-                'Add several at once with commas: inv layer, "that layer"',
+                L.TIP_ADD_WORD,
+                L["Put it in quotes to match only that exact phrase."],
+                L['Add several at once with commas: inv layer, "that layer"'],
             },
-            { "Remove word", 110, ns.RemoveWords },
+            { L["Remove word"], 110, ns.RemoveWords },
         })
 
-    local nameText = CreateListEditor(panel, wordText, "Player (First Last):", {
+    local nameText = CreateListEditor(panel, wordText, L["Player (First Last):"], {
         {
-            "Mute",
+            L["Mute"],
             70,
             ns.AddPlayers,
-            "Add this player to your mute list by hand. They stay muted even if they change guilds.",
-            "Several at once with commas: Tiny Yackle, Bacon Eggz",
+            L["Add this player to your mute list by hand. They stay muted even if they change guilds."],
+            L["Several at once with commas: Tiny Yackle, Bacon Eggz"],
         },
         {
-            "Never mute",
+            L["Never mute"],
             100,
             ns.AllowPlayers,
-            "This player is never muted, even in a muted guild. Click again with the same name to undo.",
+            L["This player is never muted, even in a muted guild. Click again with the same name to undo."],
         },
-        { "Unmute", 80, ns.RemovePlayers },
+        { L["Unmute"], 80, ns.RemovePlayers },
         {
-            "Name contains",
+            L["Name contains"],
             110,
             ns.ToggleNameWords,
-            "Hides chat from any player whose character name contains this text (at least 3 letters). "
-                .. "Click again with the same text to remove it.",
+            L.TIP_NAME_CONTAINS,
         },
     })
 
     local count = CreateLabel(panel, "GameFontNormal")
     count:SetPoint("TOPLEFT", nameText, "BOTTOMLEFT", 0, -10)
-    local viewButton = CreateButton(panel, "View list", 90, ns.ToggleListWindow)
+    local viewButton = CreateButton(panel, L["View list"], 90, ns.ToggleListWindow)
     viewButton:SetPoint("LEFT", count, "RIGHT", 12, 0)
-    local clearButton = CreateButton(panel, "Unmute all players...", 150, ns.ConfirmClearPlayers)
+    local clearButton = CreateButton(panel, L["Unmute all players..."], 150, ns.ConfirmClearPlayers)
     clearButton:SetPoint("LEFT", viewButton, "RIGHT", 24, 0) -- a gap so it isn't hit by accident
-    local logButton = CreateButton(panel, "Muted messages...", 150, ns.ToggleLogWindow)
+    local logButton = CreateButton(panel, L["Muted messages..."], 150, ns.ToggleLogWindow)
     logButton:SetPoint("TOPLEFT", count, "BOTTOMLEFT", 0, -12)
     AddTooltip(
         logButton,
-        "Muted messages",
-        "See the messages MuteGuilds hid in the last 15 minutes. Click one to report it or never mute the sender."
+        L["Muted messages"],
+        L["See the messages MuteGuilds hid in the last 15 minutes. Click one to report it or never mute the sender."]
     )
-    local importButton = CreateButton(panel, "Import ignore list...", 170, ns.StartIgnoreImport)
+    local importButton = CreateButton(panel, L["Import ignore list..."], 170, ns.StartIgnoreImport)
     importButton:SetPoint("LEFT", logButton, "RIGHT", 8, 0)
-    AddTooltip(
-        importButton,
-        "Import ignore list",
-        "Adds everyone on your WoW ignore list to your mute list, so they stay muted whatever guild they're in. "
-            .. "You can also clear them from the ignore list to free up slots."
-    )
+    AddTooltip(importButton, L["Import ignore list"], L.TIP_IMPORT)
 
     function panel:UpdateStats()
         local muted = ns.FormatNum(ns.CountMuted())
         stats:SetText(
-            ("Hidden |cffffd100%s|r messages (%s this session)  -  |cffffd100%s|r players muted"):format(
+            L["Hidden |cffffd100%s|r messages (%s this session)  -  |cffffd100%s|r players muted"]:format(
                 ns.FormatNum(ns.db.hiddenTotal),
                 ns.FormatNum(ns.sessionHidden),
                 muted
             )
         )
-        count:SetText("Muted players: " .. muted)
+        count:SetText(L["Muted players: %s"]:format(muted))
     end
 
     function panel:UpdateScanButton()
@@ -259,11 +250,11 @@ local function CreatePanel()
         local left = ns.ScanCooldownLeft()
         scanButton:SetEnabled(total > 0 and left <= 0)
         if total == 0 then
-            scanButton:SetText("Scan /who (no guilds)")
+            scanButton:SetText(L["Scan /who (no guilds)"])
         elseif left > 0 then
-            scanButton:SetText(("Next scan %d/%d in %ds"):format(nextStep, total, math.ceil(left)))
+            scanButton:SetText(L["Next scan %d/%d in %ds"]:format(nextStep, total, math.ceil(left)))
         else
-            scanButton:SetText(("Scan /who (%d/%d)"):format(nextStep, total))
+            scanButton:SetText(L["Scan /who (%d/%d)"]:format(nextStep, total))
         end
     end
 
@@ -271,10 +262,10 @@ local function CreatePanel()
         for _, check in ipairs(checks) do
             check:SetChecked(ns.db[check.setting])
         end
-        guildText:SetText("Current list: |cffffffff" .. ns.GuildList() .. "|r")
-        wordText:SetText("Filtered words: |cffffffff" .. ns.WordList() .. "|r")
-        nameText:SetText("Names containing: |cffffffff" .. ns.NameWordList() .. "|r")
-        debugButton:SetText("Debug: " .. ns.db.debugMode)
+        guildText:SetText(L["Current list: %s"]:format("|cffffffff" .. ns.GuildList() .. "|r"))
+        wordText:SetText(L["Filtered words: %s"]:format("|cffffffff" .. ns.WordList() .. "|r"))
+        nameText:SetText(L["Names containing: %s"]:format("|cffffffff" .. ns.NameWordList() .. "|r"))
+        debugButton:SetText(L["Debug: %s"]:format(DEBUG_LABEL[ns.db.debugMode]))
         self:UpdateScanButton()
         self:UpdateStats()
     end
@@ -321,11 +312,11 @@ end)
 
 function ns.OpenOptions()
     if not category then
-        Print("the options page didn't load. Look for a MuteGuilds error printed at login.")
+        Print(L["the options page didn't load. Look for a MuteGuilds error printed at login."])
     elseif not InCombatLockdown() then
         Settings.OpenToCategory(category:GetID())
     elseif not combatWaiter:IsEventRegistered("PLAYER_REGEN_ENABLED") then
         combatWaiter:RegisterEvent("PLAYER_REGEN_ENABLED")
-        Print("the options can't open during combat. They'll open as soon as combat ends.")
+        Print(L["the options can't open during combat. They'll open as soon as combat ends."])
     end
 end

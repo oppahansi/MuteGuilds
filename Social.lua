@@ -3,6 +3,7 @@
 -- your group, with its "unmute while grouped" passes.
 
 local _, ns = ...
+local L = ns.L
 local IsSecret, Print = ns.IsSecret, ns.Print
 
 ---------------------------------------------------------------------------
@@ -43,10 +44,10 @@ local function UpdatePasses()
         ns.DataChanged(true)
     end
     if #left > 0 then
-        Print("muted again (left the group): " .. table.concat(left, ", ") .. ".")
+        Print(L["muted again (left the group): %s."]:format(table.concat(left, ", ")))
     end
     if #never > 0 then
-        Print("muted again (didn't join): " .. table.concat(never, ", ") .. ".")
+        Print(L["muted again (didn't join): %s."]:format(table.concat(never, ", ")))
     end
     if soonest then
         passTimer = passTimer + 1
@@ -81,7 +82,7 @@ local function GrantPasses(members, joined)
     end
     if #names > 0 then
         local list = table.concat(names, ", ")
-        Print(("unmuted while you're grouped: %s. They're muted again when the group ends."):format(list))
+        Print(L["unmuted while you're grouped: %s. They're muted again when the group ends."]:format(list))
     end
 end
 
@@ -120,7 +121,8 @@ local function CheckGroupForMuted()
         if NeedsGroupWarning(key) then
             warnedInGroup[key] = true
             listed[key] = true
-            found[#found + 1] = { key = key, name = ns.UnitNameString(unit) or key, guild = db.players[key] }
+            local name = ns.UnitNameString(unit) or key
+            found[#found + 1] = { key = key, name = name, guild = ns.TagText(db.players[key]) }
         end
     end
     if #found == 0 then
@@ -145,7 +147,7 @@ local function CheckGroupForMuted()
     groupPopup = found
     if not StaticPopup_Show("MUTEGUILDS_GROUP", table.concat(lines, "\n"), nil, found) then
         groupPopup = nil
-        Print("|cffff5555muted in your group:|r " .. table.concat(lines, ", ") .. ". Their chat is hidden.")
+        Print(L["|cffff5555muted in your group:|r %s. Their chat is hidden."]:format(table.concat(lines, ", ")))
     end
 end
 ns.CheckGroupForMuted = CheckGroupForMuted
@@ -186,10 +188,10 @@ local function MarkAnswered(members)
 end
 
 StaticPopupDialogs["MUTEGUILDS_GROUP"] = {
-    text = "Muted players in your group:\n\n%s\n\nYou won't see their party chat.",
-    button1 = "Unmute while grouped",
-    button2 = "Keep muted",
-    button3 = "Unmute forever",
+    text = L["Muted players in your group:\n\n%s\n\nYou won't see their party chat."],
+    button1 = L["Unmute while grouped"],
+    button2 = L["Keep muted"],
+    button3 = L["Unmute forever"],
     OnAccept = function(_, members)
         groupPopup = nil
         MarkAnswered(members)
@@ -202,7 +204,7 @@ StaticPopupDialogs["MUTEGUILDS_GROUP"] = {
         if #still > 0 then
             GrantPasses(still, true)
         else
-            Print("they've already left your group.")
+            Print(L["they've already left your group."])
         end
     end,
     OnCancel = function(_, members, reason)
@@ -255,14 +257,14 @@ local function CancelInvite(name)
         pcall(C_PartyInfo.LeaveParty)
     end
     invitesSent[lower] = nil
-    Print(("cancelled the invite to %s."):format(name))
+    Print(L["cancelled the invite to %s."]:format(name))
 end
 
 StaticPopupDialogs["MUTEGUILDS_INVITE"] = {
-    text = "%s is on your MuteGuilds list <%s>.\n\nIf they join, you won't see their party chat.",
-    button1 = "Unmute while grouped",
-    button2 = "Keep muted",
-    button3 = "Cancel invite",
+    text = L["%s is on your MuteGuilds list <%s>.\n\nIf they join, you won't see their party chat."],
+    button1 = L["Unmute while grouped"],
+    button2 = L["Keep muted"],
+    button3 = L["Cancel invite"],
     OnAccept = function(_, data)
         invitePopupKey = nil
         GrantPasses({ data }, false)
@@ -302,7 +304,7 @@ local function OnInviteSent(target)
     invitePopupKey = key
     if not StaticPopup_Show("MUTEGUILDS_INVITE", target, guild, { key = key, name = target }) then
         invitePopupKey = nil
-        local text = "invited %s, who's |cffff5555muted|r <%s>. You won't see their party chat."
+        local text = L["invited %s, who's |cffff5555muted|r <%s>. You won't see their party chat."]
         ns.PrintThrottled("invite:" .. key, text:format(target, guild))
     end
 end
@@ -321,7 +323,7 @@ local function WarnWhisper(target, guid)
     if not guild and guid and not IsSecret(guid) then
         local guidKey = ns.db.guids[guid]
         if ns.IsMuted(guidKey) then
-            guild, key = ns.db.players[guidKey], guidKey
+            guild, key = ns.TagText(ns.db.players[guidKey]), guidKey
         end
     end
     if not guild then
@@ -329,7 +331,7 @@ local function WarnWhisper(target, guid)
     end
     if not warnedWhisper[key] then
         warnedWhisper[key] = true
-        Print(("%s is |cffff5555muted|r <%s>. You won't see their replies."):format(target, guild))
+        Print(L["%s is |cffff5555muted|r <%s>. You won't see their replies."]:format(target, guild))
     end
     return true
 end
@@ -386,14 +388,14 @@ local function OnTooltipUnit(tooltip)
         return
     end
     if db.allow[key] then
-        tooltip:AddLine("MuteGuilds: never muted", 0.4, 1, 0.4)
+        tooltip:AddLine(L["MuteGuilds: never muted"], 0.4, 1, 0.4)
     elseif db.players[key] and db.passes[key] then
-        tooltip:AddLine("MuteGuilds: unmuted while grouped", 1, 0.82, 0)
+        tooltip:AddLine(L["MuteGuilds: unmuted while grouped"], 1, 0.82, 0)
     elseif db.players[key] then
-        tooltip:AddLine("Muted by MuteGuilds <" .. db.players[key] .. ">", 1, 0.3, 0.3)
+        tooltip:AddLine(L["Muted by MuteGuilds <%s>"]:format(ns.TagText(db.players[key])), 1, 0.3, 0.3)
     elseif ns.FormerGuild(key) then
         -- No longer in the guild they were muted for, so no longer muted.
-        tooltip:AddLine("MuteGuilds: was in a muted guild before <" .. ns.FormerGuild(key) .. ">", 1, 0.6, 0.2)
+        tooltip:AddLine(L["MuteGuilds: was in a muted guild before <%s>"]:format(ns.FormerGuild(key)), 1, 0.6, 0.2)
     end
 end
 

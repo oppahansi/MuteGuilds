@@ -2,6 +2,7 @@
 -- opens when you right-click a player's unit frame.
 
 local _, ns = ...
+local L = ns.L
 local IsSecret = ns.IsSecret
 
 -- The unit menus that can belong to another player.
@@ -17,7 +18,7 @@ local MENUS = {
 -- Addons can't write to the clipboard, so the name is shown selected in an
 -- edit box, ready for Ctrl+C.
 StaticPopupDialogs["MUTEGUILDS_COPY"] = {
-    text = "Guild name (Ctrl+C to copy):",
+    text = L["Guild name (Ctrl+C to copy):"],
     button1 = CLOSE,
     hasEditBox = 1,
     editBoxWidth = 260,
@@ -68,14 +69,14 @@ local function AddMenuItems(_, root, context)
     end
     root:CreateDivider()
     root:CreateTitle("MuteGuilds")
-    root:CreateButton("Copy guild name", function()
+    root:CreateButton(L["Copy guild name"], function()
         StaticPopup_Show("MUTEGUILDS_COPY", nil, nil, guild)
     end)
     if ns.IsOwnGuild(guild) then
         return -- your own guild can't be muted
     end
-    local action = ns.IsMutedGuild(guild) and "Unmute guild" or "Mute guild"
-    root:CreateButton(("%s <%s>"):format(action, guild), function()
+    local label = ns.IsMutedGuild(guild) and L["Unmute guild <%s>"] or L["Mute guild <%s>"]
+    root:CreateButton(label:format(guild), function()
         ns.Try(ToggleGuild, guild, unit)
     end)
 end

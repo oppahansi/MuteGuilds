@@ -5,8 +5,11 @@
 -- Core.lua: shared helpers, name handling, saved data and the mute list itself.
 
 local _, ns = ...
+local L = ns.L
 
 ns.PREFIX = "|cff66ccffMuteGuilds:|r "
+-- Saved in place of a guild name for players who weren't muted for their
+-- guild. Saved in English whatever the language: show them with ns.TagText.
 ns.MANUAL_TAG = "added manually"
 ns.IGNORE_TAG = "from ignore list"
 ns.gen = 0 -- bumped on any change that can alter a filter decision
@@ -23,7 +26,7 @@ end
 ns.Print = Print
 
 function ns.ReportError(err)
-    Print("|cffff4444error:|r " .. tostring(err))
+    Print(L["|cffff4444error:|r %s"]:format(tostring(err)))
 end
 
 -- Runs fn and prints the error instead of failing silently.
@@ -44,7 +47,7 @@ function ns.PrintThrottled(id, msg)
 end
 
 function ns.OnOff(v)
-    return v and "|cff00ff00ON|r" or "|cffff0000OFF|r"
+    return v and ("|cff00ff00" .. L["ON"] .. "|r") or ("|cffff0000" .. L["OFF"] .. "|r")
 end
 
 function ns.FormatNum(n)
@@ -244,11 +247,18 @@ function ns.IsMuted(key)
     return key ~= nil and db.players[key] ~= nil and not db.allow[key] and not db.passes[key]
 end
 
--- Muted guild (or tag) and list key for a name, or nil.
+-- What a player is muted for, as shown to the user: the guild name, or the
+-- translated tag.
+local TAG_TEXT = { [ns.MANUAL_TAG] = L["added manually"], [ns.IGNORE_TAG] = L["from ignore list"] }
+function ns.TagText(guild)
+    return TAG_TEXT[guild] or guild
+end
+
+-- Muted guild (or tag, as shown to the user) and list key for a name, or nil.
 function ns.MutedGuildForName(name)
     local key = ResolveKey(name)
     if ns.IsMuted(key) then
-        return ns.db.players[key], key
+        return ns.TagText(ns.db.players[key]), key
     end
 end
 
@@ -295,7 +305,7 @@ function ns.Block(guid, name, guild)
         ns.OnPlayerMuted(key, name, guild)
     end
     if isNew then
-        ns.Debug("added %s <%s> to the mute list.", tostring(name), tostring(guild))
+        ns.Debug(L["added %s <%s> to the mute list."], tostring(name), tostring(ns.TagText(guild)))
         ns.PurgeHistory(key)
     end
 end
@@ -363,8 +373,8 @@ function ns.UnblockFormer(name, newGuild)
         return
     end
     ns.Unblock(nil, name)
-    local now = (newGuild and newGuild ~= "") and ("<" .. newGuild .. ">") or "unguilded"
-    ns.Debug("removed %s from the mute list, now %s.", name, now)
+    local now = (newGuild and newGuild ~= "") and ("<" .. newGuild .. ">") or L["unguilded"]
+    ns.Debug(L["removed %s from the mute list, now %s."], name, now)
 end
 
 -- Unmute players who were only muted for a guild that is no longer listed.
