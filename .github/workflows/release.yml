@@ -21,9 +21,10 @@ jobs:
 
       - uses: BigWigsMods/packager@v2
         with:
-          # File name, then the name shown on CurseForge: MuteGuilds-0.4.0(.zip),
-          # without the "-forever" the packager would add for this client.
-          args: -n "{package-name}-{project-version}:{package-name}-{project-version}"
+          # File name (the packager adds .zip), then the name shown in
+          # CurseForge's file list. Both read MuteGuilds-0.4.0.zip, without the
+          # "-forever" the packager would add for this client.
+          args: -n "{package-name}-{project-version}:{package-name}-{project-version}.zip"
         env:
           CF_API_KEY: ${{ secrets.CF_API_KEY }}
           GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
