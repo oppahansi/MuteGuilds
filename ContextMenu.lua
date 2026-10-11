@@ -77,12 +77,8 @@ local function AddMenuItems(_, root, context)
     end)
 end
 
--- Not confirmed yet that this client has the Menu API; without it the addon
--- simply has no menu entries.
-if Menu and Menu.ModifyMenu then
-    for _, menu in ipairs(MENUS) do
-        Menu.ModifyMenu(menu, function(...)
-            ns.Try(AddMenuItems, ...)
-        end)
-    end
+for _, menu in ipairs(MENUS) do
+    Menu.ModifyMenu(menu, function(...)
+        ns.Try(AddMenuItems, ...)
+    end)
 end
