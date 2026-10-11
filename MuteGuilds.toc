@@ -4,6 +4,7 @@
 ## Version: 0.1.0
 ## Author: oppahansi
 ## X-License: MIT
+## X-Curse-Project-ID: 1738637
 ## IconTexture: Interface\AddOns\MuteGuilds\Icon
 ## SavedVariables: MuteGuildsDB
 

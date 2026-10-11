@@ -1,0 +1,7 @@
+package-as: MuteGuilds
+
+# Development files that don't belong in the release zip.
+ignore:
+  - .luacheckrc
+  - .styluaignore
+  - stylua.toml
