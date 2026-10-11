@@ -71,6 +71,9 @@ local function AddMenuItems(_, root, context)
     root:CreateButton("Copy guild name", function()
         StaticPopup_Show("MUTEGUILDS_COPY", nil, nil, guild)
     end)
+    if ns.IsOwnGuild(guild) then
+        return -- your own guild can't be muted
+    end
     local action = ns.IsMutedGuild(guild) and "Unmute guild" or "Mute guild"
     root:CreateButton(("%s <%s>"):format(action, guild), function()
         ns.Try(ToggleGuild, guild, unit)

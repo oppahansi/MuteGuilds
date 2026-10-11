@@ -129,6 +129,12 @@ function ns.AddGuild(name, quiet)
     if not key then
         return false
     end
+    if ns.IsOwnGuild(name) then
+        if not quiet then
+            Print("you can't mute the guild you are in.")
+        end
+        return false
+    end
     if ns.db.guilds[key] then
         if not quiet then
             Print(('"%s" is already on the guild list.'):format(ns.db.guilds[key]))

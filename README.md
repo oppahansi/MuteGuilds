@@ -4,6 +4,8 @@ A World of Warcraft addon for the WoW Forever client (Interface 16001) that hide
 
 A guild is muted only when its **whole name** matches an entry on your list (upper and lower case don't matter). A guild whose name merely contains a listed name is left alone.
 
+The guild you are in yourself can't be muted.
+
 Everything happens on your own screen. Nothing is added to your ignore list and the other player is not notified.
 
 ## Why this addon exists

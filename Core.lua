@@ -77,13 +77,24 @@ local function GuildKey(name)
 end
 ns.GuildKey = GuildKey
 
--- True only when the whole guild name is on the list.
+-- Is this the guild you are in? Your own guild can't be muted.
+function ns.IsOwnGuild(guild)
+    local own = GetGuildInfo("player")
+    if IsSecret(own) or IsSecret(guild) then
+        return false
+    end
+    local key = GuildKey(guild)
+    return key ~= nil and key == GuildKey(own)
+end
+
+-- True only when the whole guild name is on the list. Never true for your own
+-- guild, even if its name is on the list from before you joined it.
 function ns.IsMutedGuild(guild)
     if not ns.db or IsSecret(guild) then
         return false
     end
     local key = GuildKey(guild)
-    return key ~= nil and ns.db.guilds[key] ~= nil
+    return key ~= nil and ns.db.guilds[key] ~= nil and not ns.IsOwnGuild(guild)
 end
 
 ---------------------------------------------------------------------------
