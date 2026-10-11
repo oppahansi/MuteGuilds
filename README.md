@@ -64,6 +64,15 @@ Open the options with `/mg` (or `/muteguilds`), or under Options > AddOns > Mute
 
 Several entries can be given at once, separated by commas.
 
+### Right-click menu
+
+Right-click a player's unit frame (target, focus, party, raid, or another player in the world) to find two entries under a "MuteGuilds" heading:
+
+- **Copy guild name** shows the player's guild name selected in a small box, ready to copy with Ctrl+C.
+- **Mute guild <Name>** adds that exact guild name to your list and mutes the player straight away. For a guild already on your list it reads **Unmute guild <Name>** and removes it.
+
+This is the quickest way to add a guild without typing its name. The entries appear only for players who are in a guild, and not when you right-click a name in chat, because the game only reports a guild for a player it can currently see.
+
 ## Installation
 
 Copy the `MuteGuilds` folder into `World of Warcraft\_classic_beta_\Interface\AddOns\` and restart the game.
