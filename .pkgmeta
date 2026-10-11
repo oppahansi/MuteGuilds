@@ -5,3 +5,9 @@ ignore:
   - .luacheckrc
   - .styluaignore
   - stylua.toml
+
+# The changelog shown on CurseForge and on the GitHub release. Without this
+# the packager lists the raw commit messages instead.
+manual-changelog:
+  filename: CHANGELOG.md
+  markup-type: markdown
