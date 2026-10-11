@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1
+
+No changes to the addon itself. This is the first version published to CurseForge through the automatic release; everything listed under 0.3.0 is included.
+
 ## 0.3.0
 
 First public release.
