@@ -39,6 +39,7 @@ read_globals = {
     "ChatHistory_GetChatType",
     "FCF_Close",
     "Settings",
+    "Menu",
     "TooltipDataProcessor",
     "StaticPopup_Show",
     "StaticPopup_Hide",

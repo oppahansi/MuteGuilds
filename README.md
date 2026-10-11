@@ -28,6 +28,7 @@ It also goes further than its inspiration, most visibly with the debug modes des
 - **Warnings** when you whisper or invite a muted player, a tooltip line on muted players, and a window when a muted player is in your group, with the option to unmute them while grouped.
 - **Chat bubbles** of muted players are hidden in the open world.
 - **Word filter and name filter** for hiding messages by content or by character name, from anyone.
+- **Right-click menu** on a player's unit frame, with "Copy guild name" and "Mute guild" (or "Unmute guild").
 - **Manual lists**: mute a player by hand, or mark a player as never muted.
 - **Muted-messages log** of the last 15 minutes, from which you can report a message.
 - **Ignore-list import** to move players from the game's ignore list onto your mute list.
