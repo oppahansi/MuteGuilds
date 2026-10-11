@@ -1,11 +1,12 @@
 name: Release
 
-# Pushing a tag like v0.1.0 packages the addon and publishes it to CurseForge
-# and as a GitHub release.
+# Pushing a version tag like 0.4.0 packages the addon and publishes it to
+# CurseForge and as a GitHub release. The tag is the version number on its own,
+# with no "v" in front, because the packager puts the tag into the file name.
 on:
   push:
     tags:
-      - "v*"
+      - "[0-9]+.[0-9]+.[0-9]+"
 
 permissions:
   contents: write
@@ -19,6 +20,10 @@ jobs:
           fetch-depth: 0 # full history, for the changelog
 
       - uses: BigWigsMods/packager@v2
+        with:
+          # File name, then the name shown on CurseForge: MuteGuilds-0.4.0(.zip),
+          # without the "-forever" the packager would add for this client.
+          args: -n "{package-name}-{project-version}:{package-name}-{project-version}"
         env:
           CF_API_KEY: ${{ secrets.CF_API_KEY }}
           GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
