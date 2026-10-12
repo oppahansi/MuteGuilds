@@ -4,6 +4,8 @@ A World of Warcraft addon for the WoW Forever client (Interface 16001) that hide
 
 A guild is muted only when its **whole name** matches an entry on your list (upper and lower case don't matter). A guild whose name merely contains a listed name is left alone.
 
+Some guilds come as a numbered family: *Olympus*, *Olympus 2*, *Olympus III*. Each list entry can be set to mute its **guild family** as well: the same name on its own or followed by a number (1, 2, 3 ... or I, II, III ... up to XXXIX). *Olympus Fans* is still left alone.
+
 The guild you are in yourself can't be muted.
 
 Everything happens on your own screen. Nothing is added to your ignore list and the other player is not notified.
@@ -55,6 +57,7 @@ Open the options with `/mg` (or `/muteguilds`), or under Options > AddOns > Mute
 | Command | Effect |
 | --- | --- |
 | `/mg guild add Exact Guild Name` | Mute a guild. `guild remove` takes it off the list. |
+| `/mg guild family Guild Name` | Also mute the guild's numbered guilds (`Guild Name 2`, `Guild Name II` ...). Adds the guild if it isn't listed; again to undo. |
 | `/mg add Name` / `remove Name` | Mute or unmute a player by hand. |
 | `/mg allow Name` | Never mute this player (again to undo). |
 | `/mg check Name` | Say whether a player is muted. |
@@ -70,10 +73,11 @@ Several entries can be given at once, separated by commas.
 
 ### Right-click menu
 
-Right-click a player's unit frame (target, focus, party, raid, or another player in the world) to find two entries under a "MuteGuilds" heading:
+Right-click a player's unit frame (target, focus, party, raid, or another player in the world) to find these entries under a "MuteGuilds" heading:
 
 - **Copy guild name** shows the player's guild name selected in a small box, ready to copy with Ctrl+C.
 - **Mute guild <Name>** adds that exact guild name to your list and mutes the player straight away. For a guild already on your list it reads **Unmute guild <Name>** and removes it.
+- **Mute guild family <Name>** mutes the guild together with its numbered guilds. Clicked on a member of *Olympus II*, it adds *Olympus* with the family option on.
 
 This is the quickest way to add a guild without typing its name. The entries appear only for players who are in a guild, and not when you right-click a name in chat, because the game only reports a guild for a player it can currently see.
 

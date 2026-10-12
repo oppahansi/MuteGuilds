@@ -157,6 +157,13 @@ local function CreatePanel()
                 L["Add several at once with commas: First Guild, Second Guild"],
             },
             { L["Remove guild"], 110, ns.RemoveGuilds },
+            {
+                L["Family"],
+                80,
+                ns.ToggleFamilies,
+                L["Also mutes this guild's numbered guilds: the same name followed by 1, 2, 3 ... or I, II, III ..."],
+                L["The guild is added if it isn't listed yet. Click again with the same name to mute only that guild."],
+            },
         })
 
     local scanButton = CreateButton(panel, L["Scan /who"], 200, ns.WhoScan)

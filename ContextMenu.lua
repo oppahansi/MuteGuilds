@@ -52,13 +52,14 @@ local function GuildOf(unit)
     return guild
 end
 
-local function ToggleGuild(guild, unit)
-    if ns.IsMutedGuild(guild) then
-        ns.RemoveGuild(guild)
-    else
-        ns.AddGuild(guild)
-        ns.ScanUnit(unit) -- mute this player right away
-    end
+local function MuteGuild(guild, unit)
+    ns.AddGuild(guild)
+    ns.ScanUnit(unit) -- mute this player right away
+end
+
+local function MuteFamily(guild, unit)
+    ns.MuteFamily(guild)
+    ns.ScanUnit(unit)
 end
 
 local function AddMenuItems(_, root, context)
@@ -75,10 +76,23 @@ local function AddMenuItems(_, root, context)
     if ns.IsOwnGuild(guild) then
         return -- your own guild can't be muted
     end
-    local label = ns.IsMutedGuild(guild) and L["Unmute guild <%s>"] or L["Mute guild <%s>"]
-    root:CreateButton(label:format(guild), function()
-        ns.Try(ToggleGuild, guild, unit)
-    end)
+    -- The list entry muting this guild: its own, or its family's.
+    local listed = ns.ListedKey(guild)
+    if listed then
+        local name = ns.db.guilds[listed]
+        root:CreateButton(L["Unmute guild <%s>"]:format(ns.GuildLabel(name)), function()
+            ns.Try(ns.RemoveGuild, name)
+        end)
+    else
+        root:CreateButton(L["Mute guild <%s>"]:format(guild), function()
+            ns.Try(MuteGuild, guild, unit)
+        end)
+    end
+    if not (listed and ns.db.families[listed]) then
+        root:CreateButton(L["Mute guild family <%s>"]:format(ns.FamilyRootName(guild)), function()
+            ns.Try(MuteFamily, guild, unit)
+        end)
+    end
 end
 
 for _, menu in ipairs(MENUS) do

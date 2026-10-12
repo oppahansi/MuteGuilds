@@ -3,7 +3,9 @@
 -- until they accept.
 --
 -- Wire format, one addon message per piece:  <id>:<piece>/<pieces>:<payload part>
--- Payload:  v1;g:<guild name>;w:<word entry>;...   (values percent-escaped)
+-- Payload:  v1;g:<guild name>;w:<word entry>;f:<guild name>;...   (values percent-escaped)
+-- f: marks a guild whose family is muted too. It comes in addition to the
+-- guild's g: item, and versions that don't know it skip it.
 
 local _, ns = ...
 local L = ns.L
@@ -52,12 +54,19 @@ local function BuildPayload()
     local sentGuilds = AddAll("g", guilds)
     local sentWords = AddAll("w", ns.db.words)
     local left = (#guilds - sentGuilds) + (#ns.db.words - sentWords)
+    local families = {}
+    for i = 1, sentGuilds do
+        if ns.db.families[ns.GuildKey(guilds[i])] then
+            families[#families + 1] = guilds[i]
+        end
+    end
+    AddAll("f", families)
     return table.concat(items, ";"), sentGuilds, sentWords, left
 end
 
--- Returns guilds, words, or nil for an unknown format.
+-- Returns guilds, words, family guilds, or nil for an unknown format.
 local function ParsePayload(payload)
-    local guilds, words = {}, {}
+    local lists = { g = {}, w = {}, f = {} }
     local version
     for item in (payload .. ";"):gmatch("([^;]*);") do
         if not version then
@@ -66,16 +75,16 @@ local function ParsePayload(payload)
                 return nil
             end
         else
-            local kind, value = item:match("^([gw]):(.+)$")
+            local kind, value = item:match("^([gwf]):(.+)$")
             value = value and Unescape(value)
-            local list = kind == "g" and guilds or words
+            local list = lists[kind]
             -- No color, link or texture codes from other players.
             if value and not value:find("|", 1, true) and #list < MAX_ITEMS then
                 list[#list + 1] = value
             end
         end
     end
-    return guilds, words
+    return lists.g, lists.w, lists.f
 end
 
 ---------------------------------------------------------------------------
@@ -186,11 +195,21 @@ local lastOfferFrom = {} -- sender key -> time their last offer was shown
 local lastOfferAt = -GLOBAL_GAP
 
 -- Adds shared entries quietly. Returns how many guilds and words were new.
-local function Merge(guilds, words)
+local function Merge(guilds, words, families)
     local addedGuilds, addedWords = 0, 0
     for _, guild in ipairs(guilds) do
         if ns.AddGuild(guild, true) then
             addedGuilds = addedGuilds + 1
+        end
+    end
+    -- Only for guilds that were in the share itself (and so in its preview).
+    local shared = {}
+    for _, guild in ipairs(guilds) do
+        shared[ns.GuildKey(guild) or ""] = true
+    end
+    for _, guild in ipairs(families) do
+        if shared[ns.GuildKey(guild) or ""] then
+            ns.MuteFamily(guild, true)
         end
     end
     for _, word in ipairs(words) do
@@ -202,11 +221,12 @@ local function Merge(guilds, words)
     return addedGuilds, addedWords
 end
 
-local function Replace(guilds, words)
+local function Replace(guilds, words, families)
     wipe(ns.db.guilds)
+    wipe(ns.db.families)
     wipe(ns.db.words)
     ns.ForgetWordParts()
-    local addedGuilds, addedWords = Merge(guilds, words)
+    local addedGuilds, addedWords = Merge(guilds, words, families)
     ns.UnmuteOrphans()
     return addedGuilds, addedWords
 end
@@ -228,11 +248,11 @@ StaticPopupDialogs["MUTEGUILDS_SHARE"] = {
     button2 = CANCEL,
     button3 = L["Replace mine"],
     OnAccept = function(_, data)
-        local guilds, words = Merge(data.guilds, data.words)
+        local guilds, words = Merge(data.guilds, data.words, data.families)
         Print(L["added %d guild names and %d filtered words from %s."]:format(guilds, words, data.from))
     end,
     OnAlt = function(_, data)
-        local guilds, words = Replace(data.guilds, data.words)
+        local guilds, words = Replace(data.guilds, data.words, data.families)
         local text = L["replaced your lists with %s's: %d guild names, %d filtered words."]
         Print(text:format(data.from, guilds, words))
     end,
@@ -310,7 +330,7 @@ local function OnShareMessage(text, channel, sender)
     if not payload then
         return
     end
-    local guilds, words = ParsePayload(payload)
+    local guilds, words, families = ParsePayload(payload)
     if not guilds or #guilds + #words == 0 then
         return
     end
@@ -321,9 +341,17 @@ local function OnShareMessage(text, channel, sender)
     if StaticPopup_Visible("MUTEGUILDS_SHARE") then
         return
     end
+    -- The preview marks the guilds that come with their family.
+    local isFamily, shown = {}, {}
+    for _, guild in ipairs(families) do
+        isFamily[ns.GuildKey(guild) or ""] = true
+    end
+    for i, guild in ipairs(guilds) do
+        shown[i] = isFamily[ns.GuildKey(guild) or ""] and L["%s (family)"]:format(guild) or guild
+    end
     local preview =
-        L["Guild names (%d): %s\nFiltered words (%d): %s"]:format(#guilds, Summary(guilds), #words, Summary(words))
-    local data = { from = sender, guilds = guilds, words = words }
+        L["Guild names (%d): %s\nFiltered words (%d): %s"]:format(#guilds, Summary(shown), #words, Summary(words))
+    local data = { from = sender, guilds = guilds, words = words, families = families }
     if StaticPopup_Show("MUTEGUILDS_SHARE", sender, preview, data) then
         lastOfferFrom[key], lastOfferAt = now, now -- the limits count only offers that were shown
     else

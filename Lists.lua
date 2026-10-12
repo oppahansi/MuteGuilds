@@ -119,9 +119,17 @@ function ns.GuildNames()
     return names
 end
 
+-- A listed guild as shown to the user: marked if its family is muted too.
+function ns.GuildLabel(name)
+    return ns.db.families[ns.GuildKey(name) or ""] and L["%s (family)"]:format(name) or name
+end
+
 function ns.GuildList()
-    local names = ns.GuildNames()
-    return #names > 0 and table.concat(names, ", ") or L["(none)"]
+    local labels = {}
+    for i, name in ipairs(ns.GuildNames()) do
+        labels[i] = ns.GuildLabel(name)
+    end
+    return #labels > 0 and table.concat(labels, ", ") or L["(none)"]
 end
 
 -- Returns true if the guild was added. quiet: no chat output (shared lists).
@@ -142,7 +150,7 @@ function ns.AddGuild(name, quiet)
         end
         return false
     end
-    name = strtrim((name:gsub('"', ""))):gsub("%s+", " ")
+    name = ns.CleanGuildName(name)
     ns.db.guilds[key] = name
     ns.scanQueries = nil
     ns.DataChanged(true)
@@ -157,14 +165,82 @@ function ns.RemoveGuild(name)
     local key = ns.GuildKey(name)
     local saved = key and ns.db.guilds[key]
     if not saved then
-        Print(L['"%s" isn\'t on the guild list. Guild list: %s']:format(name, ns.GuildList()))
+        local family = ns.ListedKey(name)
+        if family then
+            local text = L['"%s" is muted as part of the "%s" family. Remove that entry, or run: /mg guild family %s']
+            Print(text:format(name, ns.db.guilds[family], ns.db.guilds[family]))
+        else
+            Print(L['"%s" isn\'t on the guild list. Guild list: %s']:format(name, ns.GuildList()))
+        end
         return
     end
     ns.db.guilds[key] = nil
+    ns.db.families[key] = nil
     ns.scanQueries = nil
     ns.DataChanged(true)
     local unmuted = ns.UnmuteOrphans()
     Print(L['removed "%s" (%d players unmuted). Guild list: %s']:format(saved, unmuted, ns.GuildList()))
+end
+
+---------------------------------------------------------------------------
+-- Guild families: a listed guild can also mute its numbered guilds
+-- ("Name 1", "Name 2" ... or "Name I", "Name II" ...).
+---------------------------------------------------------------------------
+
+-- Returns how many players were unmuted by switching it off.
+local function SetFamily(key, on)
+    ns.db.families[key] = on or nil
+    ns.scanQueries = nil
+    ns.DataChanged(true)
+    return on and 0 or ns.UnmuteOrphans()
+end
+
+-- Mutes the guild's family. A guild that isn't listed yet is added under the
+-- family's first name ("Olympus II" -> "Olympus"). Returns true if anything
+-- changed. quiet: no chat output (shared lists).
+function ns.MuteFamily(name, quiet)
+    local key = ns.GuildKey(name)
+    if not key then
+        return false
+    end
+    if not ns.db.guilds[key] then
+        name = ns.FamilyRootName(name)
+        key = ns.GuildKey(name)
+        if not ns.db.guilds[key] and not ns.AddGuild(name, true) then
+            if not quiet then
+                Print(L["you can't mute the guild you are in."])
+            end
+            return false
+        end
+    end
+    local saved = ns.db.guilds[key]
+    if ns.db.families[key] then
+        if not quiet then
+            Print(L['the "%s" guild family is already muted.']:format(ns.FamilyRootName(saved)))
+        end
+        return false
+    end
+    SetFamily(key, true)
+    if not quiet then
+        local text =
+            L['now muting the "%s" guild family: that name alone or followed by a number (1, 2, I, II ...). Guild list: %s']
+        Print(text:format(ns.FamilyRootName(saved), ns.GuildList()))
+    end
+    return true
+end
+
+-- Typed input and the options button: switches the family option of a listed
+-- guild; a guild that isn't listed is added with it on.
+function ns.ToggleFamily(name)
+    local key = ns.GuildKey(name)
+    local saved = key and ns.db.guilds[key]
+    if saved and ns.db.families[key] then
+        local unmuted = SetFamily(key, false)
+        local text = L['only "%s" itself is muted now, not its family (%d players unmuted). Guild list: %s']
+        Print(text:format(saved, unmuted, ns.GuildList()))
+    else
+        ns.MuteFamily(name)
+    end
 end
 
 ---------------------------------------------------------------------------
@@ -490,6 +566,7 @@ local function ForEachEntry(action)
 end
 
 ns.AddGuilds, ns.RemoveGuilds = ForEachEntry(ns.AddGuild), ForEachEntry(ns.RemoveGuild)
+ns.ToggleFamilies = ForEachEntry(ns.ToggleFamily)
 ns.AddWords, ns.RemoveWords = ForEachEntry(ns.AddWord), ForEachEntry(ns.RemoveWord)
 ns.AddNameWords, ns.RemoveNameWords = ForEachEntry(ns.AddNameWord), ForEachEntry(ns.RemoveNameWord)
 ns.ToggleNameWords = ForEachEntry(ns.ToggleNameWord)

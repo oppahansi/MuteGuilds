@@ -9,6 +9,7 @@ local Print = ns.Print
 local HELP = {
     L["/mg (opens the options) | on | off | list | log | scan | tally | import | clear"],
     L["/mg guild add|remove Exact Guild Name"],
+    L["/mg guild family Guild Name    (also mutes Guild Name 1, 2 ... and I, II ...; again to undo)"],
     L["/mg add|remove|allow|check Player Name    (allow again to undo)"],
     L["/mg word add|remove text  |  name add|remove text"],
     "/mg invites|guildinvites|groupinvites|duels|trades|instant|bubbles|groupwarn|whisperwarn|shares on|off",
@@ -32,10 +33,17 @@ local TOGGLES = {
     shares = { "acceptShares" },
 }
 
--- "<command> add|remove <text>" edits these lists; without a valid
+-- "<command> add|remove <text>" edits these lists ("guild family <text>"
+-- switches a guild's family option); without a valid
 -- sub-command the list is printed.
 local LISTS = {
-    guild = { add = ns.AddGuilds, remove = ns.RemoveGuilds, show = ns.GuildList, label = L["guild list"] },
+    guild = {
+        add = ns.AddGuilds,
+        remove = ns.RemoveGuilds,
+        family = ns.ToggleFamilies,
+        show = ns.GuildList,
+        label = L["guild list"],
+    },
     word = { add = ns.AddWords, remove = ns.RemoveWords, show = ns.WordList, label = L["filtered words"] },
     name = { add = ns.AddNameWords, remove = ns.RemoveNameWords, show = ns.NameWordList, label = L["name list"] },
 }
@@ -98,7 +106,7 @@ local SIMPLE = {
 local function EditList(list, rest)
     local action, text = rest:match("^(%S*)%s*(.-)$")
     action = action:lower()
-    local edit = (action == "add" or action == "remove") and list[action]
+    local edit = (action == "add" or action == "remove" or action == "family") and list[action]
     if edit and text ~= "" then
         edit(text)
     else

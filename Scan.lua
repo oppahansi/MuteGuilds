@@ -22,7 +22,19 @@ end
 local function BuildQueries(maxLevel)
     local queries = {}
     local cap = GetMaxPlayerLevel()
+    -- A family is searched by its first name: /who also returns guilds whose
+    -- name only contains the text, which covers the numbered ones.
+    local names, seen = {}, {}
     for _, guild in ipairs(ns.GuildNames()) do
+        if ns.db.families[ns.GuildKey(guild)] then
+            guild = ns.FamilyRootName(guild)
+        end
+        if not seen[guild:lower()] then
+            seen[guild:lower()] = true
+            names[#names + 1] = guild
+        end
+    end
+    for _, guild in ipairs(names) do
         local base = 'g-"' .. guild .. '"'
         queries[#queries + 1] = base
         -- Members above any level seen so far: one search for all of them, so

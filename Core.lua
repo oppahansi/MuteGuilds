@@ -70,15 +70,83 @@ end
 -- Guild names
 ---------------------------------------------------------------------------
 
--- The form guild names are compared in: trimmed, single spaces, lowercase.
+-- A guild name as it is saved: trimmed, single spaces, no quotes.
+local function CleanGuildName(name)
+    return (strtrim((name:gsub('"', ""))):gsub("%s+", " "))
+end
+ns.CleanGuildName = CleanGuildName
+
+-- The form guild names are compared in: the saved form in lowercase.
 local function GuildKey(name)
     if type(name) ~= "string" then
         return nil
     end
-    local key = strtrim((name:gsub('"', ""))):gsub("%s+", " "):lower()
+    local key = CleanGuildName(name):lower()
     return key ~= "" and key or nil
 end
 ns.GuildKey = GuildKey
+
+---------------------------------------------------------------------------
+-- Guild families: "Name", "Name 1", "Name 2" ... or "Name I", "Name II" ...
+-- A list entry with the family option on mutes all of them. It is still a
+-- whole-name match: the name, optionally followed by a space and a number.
+---------------------------------------------------------------------------
+
+-- Roman numerals only up to XXXIX: with L, C, D and M ordinary words would
+-- count as numbers too ("Mix", "Dim", "Lid").
+local ROMAN_ONES =
+    { [""] = true, i = true, ii = true, iii = true, iv = true, v = true, vi = true, vii = true, viii = true, ix = true }
+
+local function IsFamilyNumber(token)
+    if token:find("^%d+$") then
+        return true
+    end
+    local ones = token:match("^x?x?x?(.*)$")
+    return token ~= "" and ROMAN_ONES[ones] == true
+end
+
+-- The name without its family number, or nil if it doesn't end in one.
+local function WithoutNumber(name)
+    local root, number = name:match("^(.+) (%S+)$")
+    if root and IsFamilyNumber(number:lower()) then
+        return root
+    end
+end
+
+-- The name of a family's first guild: "Olympus II" -> "Olympus".
+function ns.FamilyRootName(name)
+    name = CleanGuildName(name)
+    return WithoutNumber(name) or name
+end
+
+-- Root key -> key of the list entry with the family option on. Rebuilt after
+-- any data change (DataChanged clears it).
+local familyRoots
+local function FamilyRoots()
+    if not familyRoots then
+        familyRoots = {}
+        for key in pairs(ns.db.families) do
+            if ns.db.guilds[key] then
+                familyRoots[WithoutNumber(key) or key] = key
+            end
+        end
+    end
+    return familyRoots
+end
+
+-- Key of the list entry that mutes this guild: its own entry, or the entry of
+-- its family. Nil if it isn't muted.
+local function ListedKey(guild)
+    local key = GuildKey(guild)
+    if not key then
+        return nil
+    end
+    if ns.db.guilds[key] then
+        return key
+    end
+    return FamilyRoots()[WithoutNumber(key) or key]
+end
+ns.ListedKey = ListedKey
 
 -- Is this the guild you are in? Your own guild can't be muted.
 function ns.IsOwnGuild(guild)
@@ -90,14 +158,14 @@ function ns.IsOwnGuild(guild)
     return key ~= nil and key == GuildKey(own)
 end
 
--- True only when the whole guild name is on the list. Never true for your own
--- guild, even if its name is on the list from before you joined it.
+-- True only when the whole guild name is on the list, or is a numbered guild
+-- of a listed family. Never true for your own guild, even if its name is on
+-- the list from before you joined it.
 function ns.IsMutedGuild(guild)
     if not ns.db or IsSecret(guild) then
         return false
     end
-    local key = GuildKey(guild)
-    return key ~= nil and ns.db.guilds[key] ~= nil and not ns.IsOwnGuild(guild)
+    return ListedKey(guild) ~= nil and not ns.IsOwnGuild(guild)
 end
 
 ---------------------------------------------------------------------------
@@ -223,6 +291,7 @@ end
 local refreshQueued = false
 local function DataChanged(listChanged)
     ns.gen = ns.gen + 1
+    familyRoots = nil
     if listChanged and not refreshQueued then
         refreshQueued = true
         C_Timer.After(0, function()
@@ -389,7 +458,7 @@ function ns.UnmuteOrphans()
     end
     -- Notes about former members of a guild that is no longer listed.
     for key, guild in pairs(db.former) do
-        if not db.guilds[GuildKey(guild) or ""] then
+        if not ListedKey(guild) then
             db.former[key] = nil
         end
     end
@@ -400,7 +469,7 @@ end
 function ns.FormerGuild(key)
     local db = ns.db
     local guild = key and db.former[key]
-    if guild and db.players[key] == nil and db.guilds[GuildKey(guild) or ""] then
+    if guild and db.players[key] == nil and ListedKey(guild) then
         return guild
     end
 end
@@ -432,8 +501,19 @@ end
 ---------------------------------------------------------------------------
 -- Saved data
 ---------------------------------------------------------------------------
-local TABLES =
-    { "guilds", "players", "guids", "manual", "allow", "words", "nameWords", "passes", "groupWarned", "former" }
+local TABLES = {
+    "guilds",
+    "families",
+    "players",
+    "guids",
+    "manual",
+    "allow",
+    "words",
+    "nameWords",
+    "passes",
+    "groupWarned",
+    "former",
+}
 local FLAGS = {
     enabled = true,
     declineGuild = true,
@@ -495,6 +575,13 @@ function ns.InitDB()
         end
     end
     db.guilds = guilds
+
+    -- families: key of a listed guild -> true (its numbered guilds are muted too)
+    for k, v in pairs(db.families) do
+        if v ~= true or not guilds[k] then
+            db.families[k] = nil
+        end
+    end
 
     for k, v in pairs(db.players) do
         if type(k) ~= "string" or type(v) ~= "string" then

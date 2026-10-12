@@ -149,6 +149,14 @@ L["warning when a muted player is in your group"] = "Warnung bei stummgeschaltet
 L["hiding chat bubbles from muted players"] = "Sprechblasen stummgeschalteter Spieler ausblenden:"
 L["you can't mute the guild you are in."] = "Du kannst deine eigene Gilde nicht stummschalten."
 L['"%s" is already on the guild list.'] = '"%s" steht bereits auf der Gildenliste.'
+L["%s (family)"] = "%s (Familie)"
+L['"%s" is muted as part of the "%s" family. Remove that entry, or run: /mg guild family %s'] =
+    '"%s" ist als Teil der Familie "%s" stummgeschaltet. Entferne diesen Eintrag oder nutze: /mg guild family %s'
+L['the "%s" guild family is already muted.'] = 'Die Gildenfamilie "%s" ist bereits stummgeschaltet.'
+L['now muting the "%s" guild family: that name alone or followed by a number (1, 2, I, II ...). Guild list: %s'] =
+    'Die Gildenfamilie "%s" ist jetzt stummgeschaltet: dieser Name allein oder gefolgt von einer Nummer (1, 2, I, II ...). Gildenliste: %s'
+L['only "%s" itself is muted now, not its family (%d players unmuted). Guild list: %s'] =
+    'Jetzt ist nur noch "%s" selbst stummgeschaltet, nicht die Familie (Stummschaltung von %d Spielern aufgehoben). Gildenliste: %s'
 L['now muting the guild "%s" (the whole name has to match). Guild list: %s'] =
     'Die Gilde "%s" ist jetzt stummgeschaltet (der ganze Name muss übereinstimmen). Gildenliste: %s'
 L['"%s" isn\'t on the guild list. Guild list: %s'] = '"%s" steht nicht auf der Gildenliste. Gildenliste: %s'
@@ -284,6 +292,11 @@ L["Muted guilds (exact name, upper or lower case doesn't matter):"] =
     "Stummgeschaltete Gilden (exakter Name, Groß- und Kleinschreibung egal):"
 L["Add guild"] = "Gilde hinzufügen"
 L["Remove guild"] = "Gilde entfernen"
+L["Family"] = "Familie"
+L["Also mutes this guild's numbered guilds: the same name followed by 1, 2, 3 ... or I, II, III ..."] =
+    "Schaltet auch die nummerierten Gilden dieser Gilde stumm: derselbe Name, gefolgt von 1, 2, 3 ... oder I, II, III ..."
+L["The guild is added if it isn't listed yet. Click again with the same name to mute only that guild."] =
+    "Die Gilde wird hinzugefügt, falls sie noch nicht auf der Liste steht. Erneut mit demselben Namen klicken, um nur diese Gilde stummzuschalten."
 L["Mutes the guild with exactly this name. A guild whose name only contains it is not muted."] =
     "Schaltet die Gilde mit genau diesem Namen stumm. Eine Gilde, deren Name ihn nur enthält, bleibt unberührt."
 L["Add several at once with commas: First Guild, Second Guild"] =
@@ -352,6 +365,7 @@ L["Guild name (Ctrl+C to copy):"] = "Gildenname (Strg+C zum Kopieren):"
 L["Copy guild name"] = "Gildennamen kopieren"
 L["Mute guild <%s>"] = "Gilde stummschalten <%s>"
 L["Unmute guild <%s>"] = "Stummschaltung aufheben <%s>"
+L["Mute guild family <%s>"] = "Gildenfamilie stummschalten <%s>"
 
 ---------------------------------------------------------------------------
 -- Commands.lua
@@ -359,6 +373,8 @@ L["Unmute guild <%s>"] = "Stummschaltung aufheben <%s>"
 L["/mg (opens the options) | on | off | list | log | scan | tally | import | clear"] =
     "/mg (öffnet die Optionen) | on | off | list | log | scan | tally | import | clear"
 L["/mg guild add|remove Exact Guild Name"] = "/mg guild add|remove Exakter Gildenname"
+L["/mg guild family Guild Name    (also mutes Guild Name 1, 2 ... and I, II ...; again to undo)"] =
+    "/mg guild family Gildenname    (auch Gildenname 1, 2 ... und I, II ...; erneut: rückgängig)"
 L["/mg add|remove|allow|check Player Name    (allow again to undo)"] =
     "/mg add|remove|allow|check Spielername    (allow erneut: rückgängig)"
 L["/mg word add|remove text  |  name add|remove text"] = "/mg word add|remove Text  |  name add|remove Text"
