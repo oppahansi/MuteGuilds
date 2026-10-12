@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.0
+
+- **Guild families.** A guild on your list can now also mute its numbered guilds: the same name followed by a number, such as *Olympus 2* or *Olympus II* (1, 2, 3 ... or I, II, III ... up to XXXIX). You no longer have to add each of them by hand.
+- The option is set per guild: `/mg guild family Guild Name`, the new **Family** button on the options page, or **Mute guild family** in the right-click menu on a player. Using the command or the button again with the same name turns it off.
+- Guilds with the option on are shown as *Name (family)* in the guild list.
+- A guild whose name only contains a listed name, such as *Olympus Fans*, is still left alone.
+- The `/who` scan and list sharing include guild families.
+
 ## 0.3.1
 
 No changes to the addon itself. This is the first version published to CurseForge through the automatic release; everything listed under 0.3.0 is included.
