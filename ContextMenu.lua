@@ -80,7 +80,11 @@ local function AddMenuItems(_, root, context)
     local listed = ns.ListedKey(guild)
     if listed then
         local name = ns.db.guilds[listed]
-        root:CreateButton(L["Unmute guild <%s>"]:format(ns.GuildLabel(name)), function()
+        local text = L["Unmute guild <%s>"]:format(name)
+        if ns.db.families[listed] then
+            text = L["Unmute guild family <%s>"]:format(ns.FamilyRootName(name))
+        end
+        root:CreateButton(text, function()
             ns.Try(ns.RemoveGuild, name)
         end)
     else

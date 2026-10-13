@@ -56,8 +56,8 @@ Open the options with `/mg` (or `/muteguilds`), or under Options > AddOns > Mute
 
 | Command | Effect |
 | --- | --- |
-| `/mg guild add Exact Guild Name` | Mute a guild. `guild remove` takes it off the list. |
-| `/mg guild family Guild Name` | Also mute the guild's numbered guilds (`Guild Name 2`, `Guild Name II` ...). Adds the guild if it isn't listed; again to undo. |
+| `/mg guild add Exact Guild Name` | Mute a guild. `guild remove` takes it off the list, together with its family if that option is on. |
+| `/mg guild family Guild Name` | Also mute the guild's numbered guilds (`Guild Name 2`, `Guild Name II` ...). Adds the guild if it isn't listed. Again to mute only the guild itself; `guild remove` removes the whole family. |
 | `/mg add Name` / `remove Name` | Mute or unmute a player by hand. |
 | `/mg allow Name` | Never mute this player (again to undo). |
 | `/mg check Name` | Say whether a player is muted. |
@@ -77,7 +77,7 @@ Right-click a player's unit frame (target, focus, party, raid, or another player
 
 - **Copy guild name** shows the player's guild name selected in a small box, ready to copy with Ctrl+C.
 - **Mute guild <Name>** adds that exact guild name to your list and mutes the player straight away. For a guild already on your list it reads **Unmute guild <Name>** and removes it.
-- **Mute guild family <Name>** mutes the guild together with its numbered guilds. Clicked on a member of *Olympus II*, it adds *Olympus* with the family option on.
+- **Mute guild family <Name>** mutes the guild together with its numbered guilds. Clicked on a member of *Olympus II*, it adds *Olympus* with the family option on. Once the family is muted, the menu reads **Unmute guild family <Name>** on any of its members and removes the whole family.
 
 This is the quickest way to add a guild without typing its name. The entries appear only for players who are in a guild, and not when you right-click a name in chat, because the game only reports a guild for a player it can currently see.
 

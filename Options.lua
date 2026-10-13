@@ -156,9 +156,16 @@ local function CreatePanel()
                 L["Mutes the guild with exactly this name. A guild whose name only contains it is not muted."],
                 L["Add several at once with commas: First Guild, Second Guild"],
             },
-            { L["Remove guild"], 110, ns.RemoveGuilds },
             {
-                L["Family"],
+                L["Remove guild"],
+                110,
+                ns.RemoveGuilds,
+                L["Takes the guild off the list and unmutes its players."],
+                L["A guild shown as (family) is removed together with its numbered guilds."],
+                L["To keep the guild and unmute only its numbered guilds, use the Family on/off button instead."],
+            },
+            {
+                L["Family on/off"],
                 80,
                 ns.ToggleFamilies,
                 L["Also mutes this guild's numbered guilds: the same name followed by 1, 2, 3 ... or I, II, III ..."],

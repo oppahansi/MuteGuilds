@@ -155,12 +155,19 @@ function ns.RemoveGuild(name)
         end
         return
     end
+    -- An entry goes together with its family option.
+    local wasFamily = ns.db.families[key]
     ns.db.guilds[key] = nil
     ns.db.families[key] = nil
     ns.scanQueries = nil
     ns.DataChanged(true)
     local unmuted = ns.UnmuteOrphans()
-    Print(L['removed "%s" (%d players unmuted). Guild list: %s']:format(saved, unmuted, ns.GuildList()))
+    if wasFamily then
+        local text = L['removed the "%s" guild family (%d players unmuted). Guild list: %s']
+        Print(text:format(ns.FamilyRootName(saved), unmuted, ns.GuildList()))
+    else
+        Print(L['removed "%s" (%d players unmuted). Guild list: %s']:format(saved, unmuted, ns.GuildList()))
+    end
 end
 
 ---------------------------------------------------------------------------

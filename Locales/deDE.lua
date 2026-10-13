@@ -156,6 +156,8 @@ L['only "%s" itself is muted now, not its family (%d players unmuted). Guild lis
 L['now muting the guild "%s" (the whole name has to match). Guild list: %s'] =
     'Die Gilde "%s" ist jetzt stummgeschaltet (der ganze Name muss übereinstimmen). Gildenliste: %s'
 L['"%s" isn\'t on the guild list. Guild list: %s'] = '"%s" steht nicht auf der Gildenliste. Gildenliste: %s'
+L['removed the "%s" guild family (%d players unmuted). Guild list: %s'] =
+    'Die Gildenfamilie "%s" wurde entfernt (Stummschaltung von %d Spielern aufgehoben). Gildenliste: %s'
 L['removed "%s" (%d players unmuted). Guild list: %s'] =
     '"%s" entfernt (Stummschaltung von %d Spielern aufgehoben). Gildenliste: %s'
 L["name keywords need at least %d letters."] = "Namensfilter brauchen mindestens %d Buchstaben."
@@ -275,7 +277,13 @@ L["Muted guilds (exact name, upper or lower case doesn't matter):"] =
     "Stummgeschaltete Gilden (exakter Name, Groß- und Kleinschreibung egal):"
 L["Add guild"] = "Gilde hinzufügen"
 L["Remove guild"] = "Gilde entfernen"
-L["Family"] = "Familie"
+L["Takes the guild off the list and unmutes its players."] =
+    "Nimmt die Gilde von der Liste und hebt die Stummschaltung ihrer Spieler auf."
+L["A guild shown as (family) is removed together with its numbered guilds."] =
+    "Eine Gilde mit dem Zusatz (Familie) wird zusammen mit ihren nummerierten Gilden entfernt."
+L["To keep the guild and unmute only its numbered guilds, use the Family on/off button instead."] =
+    "Soll die Gilde bleiben und nur die Stummschaltung ihrer nummerierten Gilden enden, nutze stattdessen den Button Familie an/aus."
+L["Family on/off"] = "Familie an/aus"
 L["Also mutes this guild's numbered guilds: the same name followed by 1, 2, 3 ... or I, II, III ..."] =
     "Schaltet auch die nummerierten Gilden dieser Gilde stumm: derselbe Name, gefolgt von 1, 2, 3 ... oder I, II, III ..."
 L["The guild is added if it isn't listed yet. Click again with the same name to mute only that guild."] =
@@ -340,6 +348,7 @@ L["Guild name (Ctrl+C to copy):"] = "Gildenname (Strg+C zum Kopieren):"
 L["Copy guild name"] = "Gildennamen kopieren"
 L["Mute guild <%s>"] = "Gilde stummschalten <%s>"
 L["Unmute guild <%s>"] = "Stummschaltung aufheben <%s>"
+L["Unmute guild family <%s>"] = "Stummschaltung der Gildenfamilie aufheben <%s>"
 L["Mute guild family <%s>"] = "Gildenfamilie stummschalten <%s>"
 
 ---------------------------------------------------------------------------
