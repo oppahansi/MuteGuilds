@@ -508,7 +508,6 @@ local TABLES = {
     "guids",
     "manual",
     "allow",
-    "words",
     "nameWords",
     "passes",
     "groupWarned",
@@ -618,7 +617,7 @@ function ns.InitDB()
             db.groupWarned[k] = nil
         end
     end
-    db.words = StringList(db.words)
+    db.words = nil -- the word filter, removed after 0.4.0
     db.nameWords = StringList(db.nameWords)
     DataChanged(false)
 end

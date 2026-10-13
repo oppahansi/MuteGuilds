@@ -32,7 +32,7 @@ for _, event in ipairs(CHAT_EVENTS) do
     ns.INCOMING_EVENTS[event] = true
 end
 
--- Messages from Blizzard staff are never hidden by the word or name filters.
+-- Messages from Blizzard staff are never hidden by the name filter.
 local STAFF_FLAGS = { GM = true, DEV = true }
 
 ns.sessionHidden = 0
@@ -86,7 +86,7 @@ end
 -- The decision
 ---------------------------------------------------------------------------
 
--- You, staff and the never-mute list are exempt from the word and name filters.
+-- You, staff and the never-mute list are exempt from the name filter.
 local function FilterExempt(key, guid, flag)
     if flag and STAFF_FLAGS[flag] then
         return true
@@ -95,59 +95,6 @@ local function FilterExempt(key, guid, flag)
         return true
     end
     return key ~= nil and (key == ns.playerKey or ns.db.allow[key] == true)
-end
-
--- A word-filter entry matches when the message contains ALL of its words, in
--- any order ("inv layer" catches "invite to that layer pls"). An entry in
--- quotes must appear as that exact phrase.
-local wordParts = {} -- entry -> list of pieces that must all appear
-local function WordParts(entry)
-    local parts = wordParts[entry]
-    if not parts then
-        local exact = entry:match('^"(.+)"$')
-        if exact then
-            parts = { exact }
-        else
-            parts = {}
-            for part in entry:gmatch("%S+") do
-                parts[#parts + 1] = part
-            end
-        end
-        wordParts[entry] = parts
-    end
-    return parts
-end
-
-function ns.ForgetWordParts()
-    wipe(wordParts)
-end
-
-local function WordBlocked(msg)
-    local words = ns.db.words
-    if #words == 0 or type(msg) ~= "string" or IsSecret(msg) then
-        return false
-    end
-    -- Match what the reader sees: drop color codes and hidden link data, keep
-    -- the [link text]. Otherwise "item" would hide every message with an item link.
-    local text = msg
-    if text:find("|", 1, true) then
-        text = text:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub("|H.-|h(.-)|h", "%1")
-    end
-    text = text:lower()
-    for _, entry in ipairs(words) do
-        local parts = WordParts(entry)
-        local all = #parts > 0
-        for i = 1, #parts do
-            if not text:find(parts[i], 1, true) then
-                all = false
-                break
-            end
-        end
-        if all then
-            return true
-        end
-    end
-    return false
 end
 
 -- Name keywords: hide chat from any player whose character name contains one.
@@ -170,7 +117,7 @@ local function NameWordBlocked(author)
 end
 
 -- Returns why the message is hidden, or false.
-local function Decide(msg, author, guid, flag)
+local function Decide(author, guid, flag)
     local db = ns.db
     local key = ns.Normalize(author)
     local guidKey = guid and db.guids[guid]
@@ -186,17 +133,14 @@ local function Decide(msg, author, guid, flag)
     if FilterExempt(key, guid, flag) then
         return false
     end
-    if NameWordBlocked(author) then
-        return L["name keyword"]
-    end
-    return WordBlocked(msg) and L["word filter"]
+    return NameWordBlocked(author) and L["name keyword"]
 end
 
 -- Should this message be hidden? Returns the reason (or false), and whether
 -- the answer is reliable. An error counts as "don't hide" and as unreliable,
 -- so the result isn't cached.
-function ns.Evaluate(msg, author, guid, flag)
-    local ok, reason = pcall(Decide, msg, author, guid, flag)
+function ns.Evaluate(author, guid, flag)
+    local ok, reason = pcall(Decide, author, guid, flag)
     return ok and reason or false, ok
 end
 
@@ -269,7 +213,7 @@ local function Filter(_, event, msg, author, _, _, _, flag, _, _, _, _, lineID, 
         hit = cache.hit
     else
         local reliable
-        hit, reliable = ns.Evaluate(msg, author, guid, flag)
+        hit, reliable = ns.Evaluate(author, guid, flag)
         cache.valid = reliable and msgUsable
         cache.gen, cache.event, cache.flag = ns.gen, event, flag
         cache.msg, cache.author, cache.guid, cache.hit = msg, author, guid, hit

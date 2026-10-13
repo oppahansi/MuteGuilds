@@ -17,9 +17,6 @@ L.OPTIONS_DESCRIPTION = "Blendet den Chat von Spielern aus, die in einer Gilde a
     .. "automatisch erfasst, wenn du sie anvisierst, mit der Maus über sie fährst, ihre Namensplakette siehst, mit "
     .. "ihnen in einer Gruppe bist oder sie mit /who findest (der Scan-Button)."
 
-L.TIP_ADD_WORD = "Eine Nachricht wird ausgeblendet, wenn sie alle eingegebenen Wörter enthält, in beliebiger "
-    .. 'Reihenfolge. "inv layer" blendet "invite to that layer pls" aus. Teile passen auch innerhalb längerer Wörter.'
-
 L.TIP_NAME_CONTAINS = "Blendet den Chat aller Spieler aus, deren Charaktername diesen Text enthält (mindestens 3 "
     .. "Buchstaben). Erneut mit demselben Text klicken, um ihn zu entfernen."
 
@@ -34,7 +31,7 @@ L.POPUP_IMPORT = "Die %s Spieler deiner Ignorierliste zu deiner MuteGuilds-Liste
     .. "Sie bleiben stummgeschaltet, egal in welcher Gilde sie sind. Entfernst du sie von der Ignorierliste, "
     .. "werden dort Plätze frei."
 
-L.POPUP_SHARE_SEND = "Deine Gildennamen und gefilterten Wörter teilen mit:\n"
+L.POPUP_SHARE_SEND = "Deine Gildennamen teilen mit:\n"
     .. "(Name eines Spielers, oder leer lassen, um mit deiner Gruppe zu teilen)"
 
 ---------------------------------------------------------------------------
@@ -70,7 +67,6 @@ L["would hide"] = "Würde ausblenden"
 L["(unreadable text)"] = "(nicht lesbarer Text)"
 L["muted player <%s>"] = "stummgeschalteter Spieler <%s>"
 L["name keyword"] = "Namensfilter"
-L["word filter"] = "Wortfilter"
 
 ---------------------------------------------------------------------------
 -- Requests.lua
@@ -144,7 +140,7 @@ L["ask before trading with muted players"] = "Vor dem Handel mit stummgeschaltet
 L["decline group invites and duels instantly"] = "Gruppeneinladungen und Duelle sofort ablehnen:"
 L["warning when you whisper or invite a muted player"] =
     "Warnung beim Anflüstern oder Einladen stummgeschalteter Spieler:"
-L["accepting shared lists from other players"] = "Geteilte Listen anderer Spieler annehmen:"
+L["accepting shared guild lists from other players"] = "Geteilte Gildenlisten anderer Spieler annehmen:"
 L["warning when a muted player is in your group"] = "Warnung bei stummgeschalteten Spielern in deiner Gruppe:"
 L["hiding chat bubbles from muted players"] = "Sprechblasen stummgeschalteter Spieler ausblenden:"
 L["you can't mute the guild you are in."] = "Du kannst deine eigene Gilde nicht stummschalten."
@@ -162,17 +158,6 @@ L['now muting the guild "%s" (the whole name has to match). Guild list: %s'] =
 L['"%s" isn\'t on the guild list. Guild list: %s'] = '"%s" steht nicht auf der Gildenliste. Gildenliste: %s'
 L['removed "%s" (%d players unmuted). Guild list: %s'] =
     '"%s" entfernt (Stummschaltung von %d Spielern aufgehoben). Gildenliste: %s'
-L["filter entries need at least 3 characters."] = "Filtereinträge brauchen mindestens 3 Zeichen."
-L['"%s" is too short to filter on; single letters would hide almost everything.'] =
-    '"%s" ist zum Filtern zu kurz; einzelne Buchstaben würden fast alles ausblenden.'
-L["%s is already filtered."] = "%s wird bereits gefiltert."
-L['hiding messages containing the exact phrase "%s".'] = 'Nachrichten mit genau der Wortfolge "%s" werden ausgeblendet.'
-L["hiding messages that contain all of: %s (any order)."] =
-    "Nachrichten, die alle diese Wörter enthalten, werden ausgeblendet: %s (beliebige Reihenfolge)."
-L['hiding messages containing "%s".'] = 'Nachrichten mit "%s" werden ausgeblendet.'
-L["filtered words: %s"] = "Gefilterte Wörter: %s"
-L["%s isn't filtered. Filtered words: %s"] = "%s wird nicht gefiltert. Gefilterte Wörter: %s"
-L["stopped filtering %s. Filtered words: %s"] = "%s wird nicht mehr gefiltert. Gefilterte Wörter: %s"
 L["name keywords need at least %d letters."] = "Namensfilter brauchen mindestens %d Buchstaben."
 L['"%s" is already on the name list.'] = '"%s" steht bereits auf der Namensliste.'
 L['hiding chat from players whose name contains "%s". Name list: %s'] =
@@ -210,30 +195,28 @@ L["your guild"] = "deiner Gilde"
 L["join a group to share with it, or type a name: /mg share Name"] =
     "Tritt einer Gruppe bei, um mit ihr zu teilen, oder gib einen Namen an: /mg share Name"
 L["you're not in a guild."] = "Du bist in keiner Gilde."
-L["your guild list and word filter are both empty, nothing to share."] =
-    "Deine Gildenliste und dein Wortfilter sind leer, es gibt nichts zu teilen."
+L["your guild list is empty, nothing to share."] = "Deine Gildenliste ist leer, es gibt nichts zu teilen."
 L["sharing failed: the game is limiting addon messages right now. Try again in a minute."] =
     "Teilen fehlgeschlagen: Das Spiel begrenzt gerade Addon-Nachrichten. Versuch es in einer Minute erneut."
 L["sharing failed (the game refused the message, code %s)."] =
     "Teilen fehlgeschlagen (das Spiel hat die Nachricht abgelehnt, Code %s)."
-L["shared %d guild names and %d filtered words with %s. They'll be asked before anything changes."] =
-    "%d Gildennamen und %d gefilterte Wörter geteilt mit %s. Vor jeder Änderung wird dort nachgefragt."
-L["(%d more entries didn't fit in one share.)"] = "(%d weitere Einträge passten nicht in eine Sendung.)"
+L["shared %d guild names with %s. They'll be asked before anything changes."] =
+    "%d Gildennamen geteilt mit %s. Vor jeder Änderung wird dort nachgefragt."
+L["(%d more guilds didn't fit in one share.)"] = "(%d weitere Gilden passten nicht in eine Sendung.)"
 L["(shares sent by whisper only arrive if you're on their friends list or in their group.)"] =
     "(Per Flüstern geteilte Listen kommen nur an, wenn du auf der Freundesliste oder in der Gruppe des Spielers bist.)"
 L["Share"] = "Teilen"
 L[" and %d more"] = " und %d weitere"
-L["%s wants to share their MuteGuilds lists with you.\n\n%s\n\nNothing changes unless you choose below."] =
-    "%s möchte MuteGuilds-Listen mit dir teilen.\n\n%s\n\nEs ändert sich nichts, solange du unten nichts auswählst."
+L["%s wants to share their guild list with you.\n\n%s\n\nNothing changes unless you choose below."] =
+    "%s möchte eine Gildenliste mit dir teilen.\n\n%s\n\nEs ändert sich nichts, solange du unten nichts auswählst."
 L["Add to mine"] = "Hinzufügen"
 L["Replace mine"] = "Meine ersetzen"
-L["added %d guild names and %d filtered words from %s."] =
-    "%d Gildennamen und %d gefilterte Wörter von %s hinzugefügt."
-L["replaced your lists with %s's: %d guild names, %d filtered words."] =
-    "Deine Listen wurden durch die von %s ersetzt: %d Gildennamen, %d gefilterte Wörter."
-L["Guild names (%d): %s\nFiltered words (%d): %s"] = "Gildennamen (%d): %s\nGefilterte Wörter (%d): %s"
-L["%s shared their lists, but the window couldn't open right now. Ask them to send it again."] =
-    "%s hat Listen geteilt, aber das Fenster konnte gerade nicht geöffnet werden. Bitte um erneutes Senden."
+L["added %d guild names from %s."] = "%d Gildennamen von %s hinzugefügt."
+L["replaced your guild list with %s's: %d guild names."] =
+    "Deine Gildenliste wurde durch die von %s ersetzt: %d Gildennamen."
+L["Guild names (%d): %s"] = "Gildennamen (%d): %s"
+L["%s shared their guild list, but the window couldn't open right now. Ask them to send it again."] =
+    "%s hat eine Gildenliste geteilt, aber das Fenster konnte gerade nicht geöffnet werden. Bitte um erneutes Senden."
 
 ---------------------------------------------------------------------------
 -- Windows.lua
@@ -285,7 +268,7 @@ L["Auto-decline group invites"] = "Gruppeneinladungen automatisch ablehnen"
 L["Auto-decline duels"] = "Duelle automatisch ablehnen"
 L["Ask before trades"] = "Vor dem Handeln nachfragen"
 L["Decline group invites and duels instantly"] = "Gruppeneinladungen/Duelle sofort ablehnen"
-L["Accept shared lists"] = "Geteilte Listen annehmen"
+L["Accept shared guild lists"] = "Geteilte Gildenlisten annehmen"
 L["Warn when a muted player is in my group"] = "Warnung: stummer Spieler in der Gruppe"
 L["Warn if I whisper/invite a muted player"] = "Warnung beim Anflüstern/Einladen"
 L["Muted guilds (exact name, upper or lower case doesn't matter):"] =
@@ -305,14 +288,14 @@ L["Scan /who"] = "/who-Scan"
 L["Scan /who (%d/%d)"] = "/who-Scan (%d/%d)"
 L["Scan /who (no guilds)"] = "/who-Scan (keine Gilden)"
 L["Next scan %d/%d in %ds"] = "Nächster Scan %d/%d in %ds"
-L["Share lists..."] = "Listen teilen..."
-L["Share lists"] = "Listen teilen"
-L["Send your guild names and filtered words to another MuteGuilds user, or to your whole group."] =
-    "Sende deine Gildennamen und gefilterten Wörter an einen anderen MuteGuilds-Nutzer oder an deine ganze Gruppe."
+L["Share guild list..."] = "Gildenliste teilen..."
+L["Share guild list"] = "Gildenliste teilen"
+L["Send your guild names to another MuteGuilds user, or to your whole group."] =
+    "Sende deine Gildennamen an einen anderen MuteGuilds-Nutzer oder an deine ganze Gruppe."
 L["They see what's in it and choose to add it to theirs, replace theirs, or cancel. Players are never shared."] =
-    "Der Empfänger sieht den Inhalt und kann ihn hinzufügen, seine Listen ersetzen oder abbrechen. Spieler werden nie geteilt."
+    "Der Empfänger sieht den Inhalt und kann ihn hinzufügen, seine Liste ersetzen oder abbrechen. Spieler werden nie geteilt."
 L["Shares are only accepted from your group, your guild, or your friends list."] =
-    "Geteilte Listen werden nur von deiner Gruppe, deiner Gilde oder deiner Freundesliste angenommen."
+    "Geteilte Gildenlisten werden nur von deiner Gruppe, deiner Gilde oder deiner Freundesliste angenommen."
 L["Debug: %s"] = "Debug: %s"
 L["off"] = "aus"
 L["dry run"] = "Probelauf"
@@ -323,13 +306,6 @@ L["Dry run: nothing is hidden or declined. Each hit is reported with what would 
 L["Live: everything works as normal, and each hit is reported as it happens."] =
     "Live: Alles funktioniert wie gewohnt, und jeder Treffer wird sofort gemeldet."
 L["Click to switch between off, dry run and live."] = "Klicken, um zwischen aus, Probelauf und live zu wechseln."
-L["Hide messages from anyone containing all of these words (any order):"] =
-    "Nachrichten von allen ausblenden, die alle diese Wörter enthalten (beliebige Reihenfolge):"
-L["Add word"] = "Wort hinzufügen"
-L["Remove word"] = "Wort entfernen"
-L["Put it in quotes to match only that exact phrase."] =
-    "In Anführungszeichen gesetzt, zählt nur genau diese Wortfolge."
-L['Add several at once with commas: inv layer, "that layer"'] = 'Mehrere auf einmal mit Kommas: inv layer, "that layer"'
 L["Player (First Last):"] = "Spieler (Vorname Nachname):"
 L["Mute"] = "Stumm"
 L["Unmute"] = "Aufheben"
@@ -340,7 +316,6 @@ L["Several at once with commas: Tiny Yackle, Bacon Eggz"] = "Mehrere auf einmal 
 L["This player is never muted, even in a muted guild. Click again with the same name to undo."] =
     "Dieser Spieler wird nie stummgeschaltet, auch nicht in einer stummgeschalteten Gilde. Erneut mit demselben Namen klicken, um das rückgängig zu machen."
 L["Current list: %s"] = "Aktuelle Liste: %s"
-L["Filtered words: %s"] = "Gefilterte Wörter: %s"
 L["Names containing: %s"] = "Namen mit: %s"
 L["Muted players: %s"] = "Stumme Spieler: %s"
 L["View list"] = "Liste anzeigen"
@@ -377,13 +352,12 @@ L["/mg guild family Guild Name    (also mutes Guild Name 1, 2 ... and I, II ...;
     "/mg guild family Gildenname    (auch Gildenname 1, 2 ... und I, II ...; erneut: rückgängig)"
 L["/mg add|remove|allow|check Player Name    (allow again to undo)"] =
     "/mg add|remove|allow|check Spielername    (allow erneut: rückgängig)"
-L["/mg word add|remove text  |  name add|remove text"] = "/mg word add|remove Text  |  name add|remove Text"
+L["/mg name add|remove text    (hides chat from players whose name contains it)"] =
+    "/mg name add|remove Text    (blendet den Chat von Spielern aus, deren Name ihn enthält)"
 L["/mg debug off|dry|live    (dry: report only, hide nothing; live: hide and report)"] =
     "/mg debug off|dry|live    (dry: nur melden, nichts ausblenden; live: ausblenden und melden)"
-L["Separate several names or words with commas: /mg add Name1, Name2"] =
-    "Mehrere Namen oder Wörter mit Kommas trennen: /mg add Name1, Name2"
+L["Separate several names with commas: /mg add Name1, Name2"] = "Mehrere Namen mit Kommas trennen: /mg add Name1, Name2"
 L["guild list"] = "Gildenliste"
-L["filtered words"] = "Gefilterte Wörter"
 L["name list"] = "Namensliste"
 L["hidden %s messages (%s this session) from %s muted players."] =
     "%s Nachrichten ausgeblendet (%s in dieser Sitzung) von %s stummgeschalteten Spielern."

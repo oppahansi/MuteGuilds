@@ -11,11 +11,11 @@ local HELP = {
     L["/mg guild add|remove Exact Guild Name"],
     L["/mg guild family Guild Name    (also mutes Guild Name 1, 2 ... and I, II ...; again to undo)"],
     L["/mg add|remove|allow|check Player Name    (allow again to undo)"],
-    L["/mg word add|remove text  |  name add|remove text"],
+    L["/mg name add|remove text    (hides chat from players whose name contains it)"],
     "/mg invites|guildinvites|groupinvites|duels|trades|instant|bubbles|groupwarn|whisperwarn|shares on|off",
     "/mg share [Name|guild]",
     L["/mg debug off|dry|live    (dry: report only, hide nothing; live: hide and report)"],
-    L["Separate several names or words with commas: /mg add Name1, Name2"],
+    L["Separate several names with commas: /mg add Name1, Name2"],
 }
 
 -- "<command> on|off" switches these settings.
@@ -44,7 +44,6 @@ local LISTS = {
         show = ns.GuildList,
         label = L["guild list"],
     },
-    word = { add = ns.AddWords, remove = ns.RemoveWords, show = ns.WordList, label = L["filtered words"] },
     name = { add = ns.AddNameWords, remove = ns.RemoveNameWords, show = ns.NameWordList, label = L["name list"] },
 }
 

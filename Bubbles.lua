@@ -127,7 +127,7 @@ function ns.OnBubbleMessage(msg, author, _, _, _, flag, _, _, _, _, _, guid)
     if IsSecret(flag) or type(flag) ~= "string" then
         flag = nil
     end
-    Watch(msg, (ns.Evaluate(msg, author, guid, flag)))
+    Watch(msg, (ns.Evaluate(author, guid, flag)))
 end
 
 -- Put back every bubble that was hidden (filtering or the option turned off).

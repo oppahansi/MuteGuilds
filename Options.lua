@@ -107,7 +107,7 @@ local CHECKS = { -- setting, text; two per row
     { "declineDuel", L["Auto-decline duels"] },
     { "declineTrade", L["Ask before trades"] },
     { "instantDecline", L["Decline group invites and duels instantly"] },
-    { "acceptShares", L["Accept shared lists"] },
+    { "acceptShares", L["Accept shared guild lists"] },
     { "groupWarn", L["Warn when a muted player is in my group"] },
     { "whisperWarn", L["Warn if I whisper/invite a muted player"] },
 }
@@ -168,12 +168,12 @@ local function CreatePanel()
 
     local scanButton = CreateButton(panel, L["Scan /who"], 200, ns.WhoScan)
     scanButton:SetPoint("TOPLEFT", guildText, "BOTTOMLEFT", 0, -6)
-    local shareButton = CreateButton(panel, L["Share lists..."], 120, ns.PromptShare)
+    local shareButton = CreateButton(panel, L["Share guild list..."], 120, ns.PromptShare)
     shareButton:SetPoint("LEFT", scanButton, "RIGHT", 12, 0)
     AddTooltip(
         shareButton,
-        L["Share lists"],
-        L["Send your guild names and filtered words to another MuteGuilds user, or to your whole group."],
+        L["Share guild list"],
+        L["Send your guild names to another MuteGuilds user, or to your whole group."],
         L["They see what's in it and choose to add it to theirs, replace theirs, or cancel. Players are never shared."],
         L["Shares are only accepted from your group, your guild, or your friends list."]
     )
@@ -187,20 +187,7 @@ local function CreatePanel()
         L["Click to switch between off, dry run and live."]
     )
 
-    local wordText =
-        CreateListEditor(panel, scanButton, L["Hide messages from anyone containing all of these words (any order):"], {
-            {
-                L["Add word"],
-                90,
-                ns.AddWords,
-                L.TIP_ADD_WORD,
-                L["Put it in quotes to match only that exact phrase."],
-                L['Add several at once with commas: inv layer, "that layer"'],
-            },
-            { L["Remove word"], 110, ns.RemoveWords },
-        })
-
-    local nameText = CreateListEditor(panel, wordText, L["Player (First Last):"], {
+    local nameText = CreateListEditor(panel, scanButton, L["Player (First Last):"], {
         {
             L["Mute"],
             70,
@@ -270,7 +257,6 @@ local function CreatePanel()
             check:SetChecked(ns.db[check.setting])
         end
         guildText:SetText(L["Current list: %s"]:format("|cffffffff" .. ns.GuildList() .. "|r"))
-        wordText:SetText(L["Filtered words: %s"]:format("|cffffffff" .. ns.WordList() .. "|r"))
         nameText:SetText(L["Names containing: %s"]:format("|cffffffff" .. ns.NameWordList() .. "|r"))
         debugButton:SetText(L["Debug: %s"]:format(DEBUG_LABEL[ns.db.debugMode]))
         self:UpdateScanButton()

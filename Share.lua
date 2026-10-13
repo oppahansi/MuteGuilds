@@ -1,18 +1,18 @@
--- Share.lua: send your guild names and filtered words to another MuteGuilds
--- user. Players are never shared, and nothing changes on the receiving side
--- until they accept.
+-- Share.lua: send your guild names to another MuteGuilds user. Players are
+-- never shared, and nothing changes on the receiving side until they accept.
 --
 -- Wire format, one addon message per piece:  <id>:<piece>/<pieces>:<payload part>
--- Payload:  v1;g:<guild name>;w:<word entry>;f:<guild name>;...   (values percent-escaped)
+-- Payload:  v1;g:<guild name>;f:<guild name>;...   (values percent-escaped)
 -- f: marks a guild whose family is muted too. It comes in addition to the
--- guild's g: item, and versions that don't know it skip it.
+-- guild's g: item, and versions that don't know it skip it. Versions up to
+-- 0.4.0 also sent w: items (a word filter); they are skipped.
 
 local _, ns = ...
 local L = ns.L
 local IsSecret, Print = ns.IsSecret, ns.Print
 
 local PREFIX = "MuteGuilds"
-local MAX_ITEMS = 100 -- per list
+local MAX_ITEMS = 100 -- guilds per share
 local CHUNK = 220 -- characters of payload per addon message
 local MAX_PIECES = 20 -- what a receiver accepts
 local MAX_BYTES = MAX_PIECES * CHUNK
@@ -35,7 +35,7 @@ local function Unescape(value)
     end))
 end
 
--- Returns payload, guilds included, words included, entries that didn't fit.
+-- Returns payload, guilds included, guilds that didn't fit.
 local function BuildPayload()
     local items, size = { "v1" }, 2
     local function AddAll(kind, list)
@@ -52,8 +52,6 @@ local function BuildPayload()
     end
     local guilds = ns.GuildNames()
     local sentGuilds = AddAll("g", guilds)
-    local sentWords = AddAll("w", ns.db.words)
-    local left = (#guilds - sentGuilds) + (#ns.db.words - sentWords)
     local families = {}
     for i = 1, sentGuilds do
         if ns.db.families[ns.GuildKey(guilds[i])] then
@@ -61,12 +59,12 @@ local function BuildPayload()
         end
     end
     AddAll("f", families)
-    return table.concat(items, ";"), sentGuilds, sentWords, left
+    return table.concat(items, ";"), sentGuilds, #guilds - sentGuilds
 end
 
--- Returns guilds, words, family guilds, or nil for an unknown format.
+-- Returns guilds, family guilds, or nil for an unknown format.
 local function ParsePayload(payload)
-    local lists = { g = {}, w = {}, f = {} }
+    local lists = { g = {}, f = {} }
     local version
     for item in (payload .. ";"):gmatch("([^;]*);") do
         if not version then
@@ -75,7 +73,7 @@ local function ParsePayload(payload)
                 return nil
             end
         else
-            local kind, value = item:match("^([gwf]):(.+)$")
+            local kind, value = item:match("^([gf]):(.+)$")
             value = value and Unescape(value)
             local list = lists[kind]
             -- No color, link or texture codes from other players.
@@ -84,7 +82,7 @@ local function ParsePayload(payload)
             end
         end
     end
-    return lists.g, lists.w, lists.f
+    return lists.g, lists.f
 end
 
 ---------------------------------------------------------------------------
@@ -118,9 +116,9 @@ function ns.SendShare(target)
         Print(who)
         return
     end
-    local payload, sentGuilds, sentWords, left = BuildPayload()
-    if sentGuilds + sentWords == 0 then
-        Print(L["your guild list and word filter are both empty, nothing to share."])
+    local payload, sentGuilds, left = BuildPayload()
+    if sentGuilds == 0 then
+        Print(L["your guild list is empty, nothing to share."])
         return
     end
     local id = tostring(math.random(10000, 99999))
@@ -149,10 +147,9 @@ function ns.SendShare(target)
             C_Timer.After(0.2, SendNext)
             return
         end
-        local text = L["shared %d guild names and %d filtered words with %s. They'll be asked before anything changes."]
-        Print(text:format(sentGuilds, sentWords, who))
+        Print(L["shared %d guild names with %s. They'll be asked before anything changes."]:format(sentGuilds, who))
         if left > 0 then
-            Print(L["(%d more entries didn't fit in one share.)"]:format(left))
+            Print(L["(%d more guilds didn't fit in one share.)"]:format(left))
         end
         if channel == "WHISPER" then
             Print(L["(shares sent by whisper only arrive if you're on their friends list or in their group.)"])
@@ -194,9 +191,9 @@ local incoming = {} -- "sender|id" -> { parts, total, got, t }
 local lastOfferFrom = {} -- sender key -> time their last offer was shown
 local lastOfferAt = -GLOBAL_GAP
 
--- Adds shared entries quietly. Returns how many guilds and words were new.
-local function Merge(guilds, words, families)
-    local addedGuilds, addedWords = 0, 0
+-- Adds shared guilds quietly. Returns how many were new.
+local function Merge(guilds, families)
+    local addedGuilds = 0
     for _, guild in ipairs(guilds) do
         if ns.AddGuild(guild, true) then
             addedGuilds = addedGuilds + 1
@@ -212,23 +209,16 @@ local function Merge(guilds, words, families)
             ns.MuteFamily(guild, true)
         end
     end
-    for _, word in ipairs(words) do
-        if ns.AddWord(word, true) then
-            addedWords = addedWords + 1
-        end
-    end
     ns.DataChanged(true)
-    return addedGuilds, addedWords
+    return addedGuilds
 end
 
-local function Replace(guilds, words, families)
+local function Replace(guilds, families)
     wipe(ns.db.guilds)
     wipe(ns.db.families)
-    wipe(ns.db.words)
-    ns.ForgetWordParts()
-    local addedGuilds, addedWords = Merge(guilds, words, families)
+    local addedGuilds = Merge(guilds, families)
     ns.UnmuteOrphans()
-    return addedGuilds, addedWords
+    return addedGuilds
 end
 
 local function Summary(list)
@@ -243,18 +233,17 @@ local function Summary(list)
 end
 
 StaticPopupDialogs["MUTEGUILDS_SHARE"] = {
-    text = L["%s wants to share their MuteGuilds lists with you.\n\n%s\n\nNothing changes unless you choose below."],
+    text = L["%s wants to share their guild list with you.\n\n%s\n\nNothing changes unless you choose below."],
     button1 = L["Add to mine"],
     button2 = CANCEL,
     button3 = L["Replace mine"],
     OnAccept = function(_, data)
-        local guilds, words = Merge(data.guilds, data.words, data.families)
-        Print(L["added %d guild names and %d filtered words from %s."]:format(guilds, words, data.from))
+        local guilds = Merge(data.guilds, data.families)
+        Print(L["added %d guild names from %s."]:format(guilds, data.from))
     end,
     OnAlt = function(_, data)
-        local guilds, words = Replace(data.guilds, data.words, data.families)
-        local text = L["replaced your lists with %s's: %d guild names, %d filtered words."]
-        Print(text:format(data.from, guilds, words))
+        local guilds = Replace(data.guilds, data.families)
+        Print(L["replaced your guild list with %s's: %d guild names."]:format(data.from, guilds))
     end,
     timeout = 0,
     whileDead = true,
@@ -330,8 +319,8 @@ local function OnShareMessage(text, channel, sender)
     if not payload then
         return
     end
-    local guilds, words, families = ParsePayload(payload)
-    if not guilds or #guilds + #words == 0 then
+    local guilds, families = ParsePayload(payload)
+    if not guilds or #guilds == 0 then
         return
     end
     local now = GetTime()
@@ -349,13 +338,13 @@ local function OnShareMessage(text, channel, sender)
     for i, guild in ipairs(guilds) do
         shown[i] = isFamily[ns.GuildKey(guild) or ""] and L["%s (family)"]:format(guild) or guild
     end
-    local preview =
-        L["Guild names (%d): %s\nFiltered words (%d): %s"]:format(#guilds, Summary(shown), #words, Summary(words))
-    local data = { from = sender, guilds = guilds, words = words, families = families }
+    local preview = L["Guild names (%d): %s"]:format(#guilds, Summary(shown))
+    local data = { from = sender, guilds = guilds, families = families }
     if StaticPopup_Show("MUTEGUILDS_SHARE", sender, preview, data) then
         lastOfferFrom[key], lastOfferAt = now, now -- the limits count only offers that were shown
     else
-        local notice = L["%s shared their lists, but the window couldn't open right now. Ask them to send it again."]
+        local notice =
+            L["%s shared their guild list, but the window couldn't open right now. Ask them to send it again."]
         ns.PrintThrottled("sharefail:" .. key, notice:format(sender))
     end
 end

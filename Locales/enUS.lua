@@ -19,9 +19,6 @@ L.OPTIONS_DESCRIPTION = "Hides chat from players in the guilds on your list. A g
     .. "player's guild, so players are added automatically when you target them, mouse over them, see their "
     .. "nameplate, group with them, or find them with /who (the Scan button)."
 
-L.TIP_ADD_WORD = 'A message is hidden if it contains every word you enter, in any order. "inv layer" hides '
-    .. '"invite to that layer pls". Parts also match inside longer words.'
-
 L.TIP_NAME_CONTAINS = "Hides chat from any player whose character name contains this text (at least 3 letters). "
     .. "Click again with the same text to remove it."
 
@@ -34,5 +31,4 @@ L.POPUP_CLEAR = "Unmute all %s players on your mute list?\n\n"
 L.POPUP_IMPORT = "Add the %s players on your ignore list to your MuteGuilds list?\n\n"
     .. "They'll stay muted whatever guild they're in. Removing them from the ignore list frees up ignore slots."
 
-L.POPUP_SHARE_SEND = "Share your guild names and filtered words with:\n"
-    .. "(a player's name, or leave empty to share with your group)"
+L.POPUP_SHARE_SEND = "Share your guild names with:\n" .. "(a player's name, or leave empty to share with your group)"

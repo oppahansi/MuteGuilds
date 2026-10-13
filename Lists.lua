@@ -1,5 +1,5 @@
 -- Lists.lua: the actions behind the slash command and the options panel:
--- switching settings, and editing the guild, word, name and player lists.
+-- switching settings, and editing the guild, name and player lists.
 
 local _, ns = ...
 local L = ns.L
@@ -7,29 +7,14 @@ local IsSecret, Print = ns.IsSecret, ns.Print
 
 local MIN_NAME_WORD = 3 -- stops "a" from muting half the server
 
--- Runs fn for each comma-separated entry of text. Commas inside quotes stay
--- part of the entry, so a quoted word-filter phrase can contain one.
+-- Runs fn for each comma-separated entry of text.
 local function EachEntry(text, fn)
-    local entry, inQuote = {}, false
-    local function Flush()
-        local value = strtrim(table.concat(entry))
-        entry = {}
+    for entry in text:gmatch("[^,]+") do
+        local value = strtrim(entry)
         if value ~= "" then
             fn(value)
         end
     end
-    for i = 1, #text do
-        local c = text:sub(i, i)
-        if c == '"' then
-            inQuote = not inQuote
-        end
-        if c == "," and not inQuote then
-            Flush()
-        else
-            entry[#entry + 1] = c
-        end
-    end
-    Flush()
 end
 
 -- Lists are shown alphabetically; the saved order doesn't matter.
@@ -53,10 +38,6 @@ local function IndexOf(list, value)
     end
 end
 
-local function Quoted(text)
-    return text:sub(1, 1) == '"' and text or ('"' .. text .. '"')
-end
-
 ---------------------------------------------------------------------------
 -- Settings
 ---------------------------------------------------------------------------
@@ -77,7 +58,7 @@ local SETTINGS = {
     declineTrade = { label = L["ask before trading with muted players"] },
     instantDecline = { label = L["decline group invites and duels instantly"], apply = ns.RecheckDeclines },
     whisperWarn = { label = L["warning when you whisper or invite a muted player"] },
-    acceptShares = { label = L["accepting shared lists from other players"] },
+    acceptShares = { label = L["accepting shared guild lists from other players"] },
     groupWarn = {
         label = L["warning when a muted player is in your group"],
         apply = function(on)
@@ -241,81 +222,6 @@ function ns.ToggleFamily(name)
     else
         ns.MuteFamily(name)
     end
-end
-
----------------------------------------------------------------------------
--- Word filter
----------------------------------------------------------------------------
-
--- One cleanup for adding and removing: lowercase, single spaces, and no
--- spaces just inside quotes.
-local function CleanWord(text)
-    local word = strtrim(text):lower():gsub("%s+", " ")
-    local inner = word:match('^"(.*)"$')
-    return inner and ('"' .. strtrim(inner) .. '"') or word
-end
-
--- Why an entry can't be used, or nil if it is fine.
-local function WordProblem(word)
-    local exact = word:match('^"(.+)"$')
-    if #(exact or word) < 3 then
-        return L["filter entries need at least 3 characters."]
-    end
-    if not exact then
-        for part in word:gmatch("%S+") do
-            if #part < 2 then
-                local text = L['"%s" is too short to filter on; single letters would hide almost everything.']
-                return text:format(part)
-            end
-        end
-    end
-end
-
-function ns.WordList()
-    return Sorted(ns.db.words)
-end
-
-function ns.AddWord(text, quiet)
-    local word = CleanWord(text)
-    local problem = WordProblem(word)
-    if not problem and IndexOf(ns.db.words, word) then
-        problem = L["%s is already filtered."]:format(Quoted(word))
-    end
-    if problem then
-        if not quiet then
-            Print(problem)
-        end
-        return false
-    end
-    table.insert(ns.db.words, word)
-    ns.DataChanged(false)
-    if not quiet then
-        local exact = word:match('^"(.+)"$')
-        if exact then
-            Print(L['hiding messages containing the exact phrase "%s".']:format(exact))
-        elseif word:find(" ", 1, true) then
-            Print(L["hiding messages that contain all of: %s (any order)."]:format((word:gsub(" ", ", "))))
-        else
-            Print(L['hiding messages containing "%s".']:format(word))
-        end
-        Print(L["filtered words: %s"]:format(ns.WordList()))
-    end
-    return true
-end
-
-function ns.RemoveWord(text)
-    local word = CleanWord(text)
-    -- The entry as typed first; otherwise its quoted or unquoted twin.
-    local twin = word:match('^"(.*)"$') or ('"' .. word .. '"')
-    local index = IndexOf(ns.db.words, word) or IndexOf(ns.db.words, twin)
-    if not index then
-        Print(L["%s isn't filtered. Filtered words: %s"]:format(Quoted(word), ns.WordList()))
-        return
-    end
-    local removed = table.remove(ns.db.words, index)
-    ns.ForgetWordParts()
-    ns.DataChanged(false)
-    Print(L["stopped filtering %s. Filtered words: %s"]:format(Quoted(removed), ns.WordList()))
 end
 
 ---------------------------------------------------------------------------
@@ -567,7 +473,6 @@ end
 
 ns.AddGuilds, ns.RemoveGuilds = ForEachEntry(ns.AddGuild), ForEachEntry(ns.RemoveGuild)
 ns.ToggleFamilies = ForEachEntry(ns.ToggleFamily)
-ns.AddWords, ns.RemoveWords = ForEachEntry(ns.AddWord), ForEachEntry(ns.RemoveWord)
 ns.AddNameWords, ns.RemoveNameWords = ForEachEntry(ns.AddNameWord), ForEachEntry(ns.RemoveNameWord)
 ns.ToggleNameWords = ForEachEntry(ns.ToggleNameWord)
 ns.AddPlayers, ns.RemovePlayers = ForEachEntry(ns.AddPlayer), ForEachEntry(ns.RemovePlayer)

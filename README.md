@@ -32,12 +32,12 @@ It also goes further than its inspiration, most visibly with the debug modes des
 - **Former members.** A player seen outside the guild they were muted for is unmuted, and their tooltip then notes that they were in a muted guild before.
 - **Warnings** when you whisper or invite a muted player, a tooltip line on muted players, and a window when a muted player is in your group, with the option to unmute them while grouped.
 - **Chat bubbles** of muted players are hidden in the open world.
-- **Word filter and name filter** for hiding messages by content or by character name, from anyone.
+- **Name filter** for hiding chat from any player whose character name contains a given text.
 - **Right-click menu** on a player's unit frame, with "Copy guild name" and "Mute guild" (or "Unmute guild").
 - **Manual lists**: mute a player by hand, or mark a player as never muted.
 - **Muted-messages log** of the last 15 minutes, from which you can report a message.
 - **Ignore-list import** to move players from the game's ignore list onto your mute list.
-- **List sharing** of guild names and filtered words with other MuteGuilds users. The receiver is always asked first.
+- **List sharing** of your guild names with other MuteGuilds users. The receiver is always asked first.
 - **English and German.** The addon follows the language of your game client.
 
 ## Debug modes
@@ -61,11 +61,11 @@ Open the options with `/mg` (or `/muteguilds`), or under Options > AddOns > Mute
 | `/mg add Name` / `remove Name` | Mute or unmute a player by hand. |
 | `/mg allow Name` | Never mute this player (again to undo). |
 | `/mg check Name` | Say whether a player is muted. |
-| `/mg word add text` / `name add text` | Add to the word filter or the name filter (`remove` to undo). |
+| `/mg name add text` | Hide chat from players whose character name contains the text (`name remove` to undo). |
 | `/mg scan` | Run the next `/who` search. |
 | `/mg list` / `log` | Open the muted-players list or the muted-messages log. |
 | `/mg on` / `off` | Turn filtering on or off. |
-| `/mg share [Name\|guild]` | Share your lists with a player, your guild, or (no name) your group. |
+| `/mg share [Name\|guild]` | Share your guild list with a player, your guild, or (no name) your group. |
 | `/mg import` | Import your ignore list. |
 | `/mg help` | List every command. |
 
