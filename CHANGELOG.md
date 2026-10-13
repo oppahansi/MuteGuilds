@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.0
+
+- **The word filter is gone.** Hiding messages by the words in them is something many other addons already do, and it is not what MuteGuilds is for. The block on the options page and `/mg word` are removed, and your saved word entries are deleted. The name filter (`/mg name`, **Name contains**) stays.
+- **List sharing** now sends your guild names only. Shares from players still on 0.4.0 keep working; any words in them are ignored.
+- **Removing a guild family is clearer.** Removing a guild shown as *Name (family)* has always removed its numbered guilds too. The chat message now says so, the **Remove guild** button explains it in a tooltip, and the right-click menu reads **Unmute guild family** on a member of a muted family.
+- The **Family** button on the options page is now called **Family on/off**. It switches the option for a guild; to take the guild off the list altogether, use **Remove guild**.
+
 ## 0.4.0
 
 - **Guild families.** A guild on your list can now also mute its numbered guilds: the same name followed by a number, such as *Olympus 2* or *Olympus II* (1, 2, 3 ... or I, II, III ... up to XXXIX). You no longer have to add each of them by hand.
